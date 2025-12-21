@@ -1,0 +1,21 @@
+{
+  "scripts": {
+    "dev:frontend": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "backend": "cd server && npm start",
+    "dev": "concurrently \"npm run backend\" \"npm run dev:frontend\""
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.11.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.23",
+    "concurrently": "^9.2.1",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.19",
+    "vite": "^6.4.1"
+  }
+}
