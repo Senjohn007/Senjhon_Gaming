@@ -41,29 +41,28 @@ export function initHangman() {
       });
   }
 
+  // UPDATED: use shared submitScore pattern with auth + gameKey
   function submitScore(scoreValue, resultText) {
-    if (typeof getPlayerInfo !== "function") {
+    if (typeof window.getPlayerInfo !== "function") {
       console.error("getPlayerInfo is not available");
       return;
     }
 
-    const player = getPlayerInfo(); // { id, name }
-
-    if (!player || !player.id || !player.name) {
-      console.error("Invalid player info", player);
-      return;
-    }
+    const player = window.getPlayerInfo();
 
     fetch("http://localhost:5000/api/scores", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${
+          localStorage.getItem("authToken") || ""
+        }`,
       },
       body: JSON.stringify({
-        playerId: player.id,
-        username: player.name,
         gameKey: "hangman",
         value: scoreValue,
+        userId: player.isGuest ? null : player.id,
+        username: player.name,
       }),
     })
       .then((res) => res.json())

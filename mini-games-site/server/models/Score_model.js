@@ -3,10 +3,10 @@ const mongoose = require("mongoose");
 // models/Score_model.js
 const scoreSchema = new mongoose.Schema(
   {
-    playerId: { type: String, required: true },
-    username: { type: String, required: true },
     gameKey: { type: String, required: true },
     value: { type: Number, required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    username: { type: String, required: true },
   },
   { timestamps: true }
 );

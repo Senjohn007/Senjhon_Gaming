@@ -43,6 +43,7 @@ export function initRps() {
   let computerWins = 0;
   let matchActive = false;
 
+  // ---- leaderboard loader ----
   function loadRpsLeaderboard() {
     fetch("http://localhost:5000/api/scores/leaderboard?game=rps&limit=10")
       .then((res) => res.json())
@@ -64,15 +65,16 @@ export function initRps() {
       });
   }
 
+  // ---- updated submitScore using getPlayerInfo + userId ----
   function submitScore(scoreValue, resultText) {
-    if (typeof getPlayerInfo !== "function") {
+    if (typeof window.getPlayerInfo !== "function") {
       console.error("getPlayerInfo is not available");
       return;
     }
 
-    const player = getPlayerInfo();
+    const player = window.getPlayerInfo();
 
-    if (!player || !player.id || !player.name) {
+    if (!player || !player.name) {
       console.error("Invalid player info", player);
       return;
     }
@@ -81,12 +83,13 @@ export function initRps() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken") || ""}`,
       },
       body: JSON.stringify({
-        playerId: player.id,
-        username: player.name,
         gameKey: "rps",
         value: scoreValue, // 1 win, 0 tie, -1 loss
+        userId: player.isGuest ? null : player.id,
+        username: player.name,
       }),
     })
       .then((res) => res.json())

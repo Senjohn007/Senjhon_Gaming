@@ -58,29 +58,28 @@ export function initTypingSpeed() {
       });
   }
 
+  // UPDATED: use shared submitScore pattern with auth + gameKey
   function submitScore(scoreValue, accuracyValue) {
-    if (typeof getPlayerInfo !== "function") {
+    if (typeof window.getPlayerInfo !== "function") {
       console.error("getPlayerInfo is not available");
       return;
     }
 
-    const player = getPlayerInfo();
-
-    if (!player || !player.id || !player.name) {
-      console.error("Invalid player info", player);
-      return;
-    }
+    const player = window.getPlayerInfo();
 
     fetch("http://localhost:5000/api/scores", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${
+          localStorage.getItem("authToken") || ""
+        }`,
       },
       body: JSON.stringify({
-        playerId: player.id,
-        username: player.name,
         gameKey: "typing-speed",
         value: scoreValue, // WPM
+        userId: player.isGuest ? null : player.id,
+        username: player.name,
       }),
     })
       .then((res) => res.json())
@@ -152,7 +151,7 @@ export function initTypingSpeed() {
       .split(/\s+/)
       .filter(Boolean).length;
     const rawWpm = (wordsTyped / seconds) * 60;
-    const wpm = Math.round(isNaN(rawWpm) ? 0 : rawWpm); // standard WPM formula [web:64][web:67]
+    const wpm = Math.round(isNaN(rawWpm) ? 0 : rawWpm);
 
     const typed = input.value;
     let correctChars = 0;
@@ -162,7 +161,7 @@ export function initTypingSpeed() {
     }
     const accuracy = Math.round(
       (correctChars / targetSentence.length) * 100
-    ); // character-based accuracy [web:64]
+    );
 
     const finalWpm = isNaN(wpm) ? 0 : wpm;
     resultDiv.textContent = `Time: ${seconds.toFixed(

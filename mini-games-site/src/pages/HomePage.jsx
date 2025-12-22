@@ -1,10 +1,14 @@
 // src/pages/HomePage.jsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { initUsernameUI } from "../games/username";
+import { getCurrentUser } from "../auth";
 
 export default function HomePage() {
+  const [user, setUser] = useState(null);
+
   useEffect(() => {
+    setUser(getCurrentUser());
     if (typeof initUsernameUI === "function") {
       initUsernameUI();
     }
@@ -13,6 +17,25 @@ export default function HomePage() {
   return (
     <section className="min-h-[calc(100vh-80px)] bg-gradient-to-b from-slate-900 via-slate-950 to-black text-slate-100">
       <div className="max-w-6xl mx-auto px-4 py-12">
+        {/* top bar */}
+        <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+          <p className="text-sm text-slate-300">
+            {user ? (
+              <>
+                Playing as{" "}
+                <span className="font-semibold text-purple-300">
+                  {user.name}
+                </span>
+              </>
+            ) : (
+              <>
+                Playing as{" "}
+                <span className="font-semibold text-slate-200">Guest</span>
+              </>
+            )}
+          </p>
+        </div>
+
         {/* hero */}
         <div className="text-center mb-10">
           <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-purple-300 drop-shadow-[0_0_25px_rgba(168,85,247,0.55)]">

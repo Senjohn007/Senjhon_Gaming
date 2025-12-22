@@ -35,6 +35,7 @@ export function initTicTacToe() {
   let computerWins = 0;
   let matchActive = false;
 
+  // ---- leaderboard loader ----
   function loadTttLeaderboard() {
     fetch(
       "http://localhost:5000/api/scores/leaderboard?game=tictactoe&limit=10"
@@ -58,15 +59,16 @@ export function initTicTacToe() {
       });
   }
 
+  // ---- updated submitScore using getPlayerInfo + userId ----
   function submitScore(scoreValue, resultText) {
-    if (typeof getPlayerInfo !== "function") {
+    if (typeof window.getPlayerInfo !== "function") {
       console.error("getPlayerInfo is not available");
       return;
     }
 
-    const player = getPlayerInfo();
+    const player = window.getPlayerInfo();
 
-    if (!player || !player.id || !player.name) {
+    if (!player || !player.name) {
       console.error("Invalid player info", player);
       return;
     }
@@ -75,12 +77,13 @@ export function initTicTacToe() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken") || ""}`,
       },
       body: JSON.stringify({
-        playerId: player.id,
-        username: player.name,
         gameKey: "tictactoe",
-        value: scoreValue,
+        value: scoreValue, // 1 win, 0 tie, -1 loss
+        userId: player.isGuest ? null : player.id,
+        username: player.name,
       }),
     })
       .then((res) => res.json())
