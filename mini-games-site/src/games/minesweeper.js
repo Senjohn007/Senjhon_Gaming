@@ -3,9 +3,7 @@ export function initMinesweeper() {
   const gridEl = document.getElementById("mines-grid");
   const statusEl = document.getElementById("mines-status");
   const resetBtn = document.getElementById("mines-reset");
-  const leaderboardBody = document.querySelector(
-    "#mines-leaderboard tbody"
-  );
+  const leaderboardBody = document.querySelector("#mines-leaderboard tbody");
 
   if (!gridEl || !statusEl || !resetBtn || !leaderboardBody) return;
 
@@ -22,6 +20,7 @@ export function initMinesweeper() {
     return `${r},${c}`;
   }
 
+  // ---- leaderboard loader ----
   function loadLeaderboard() {
     fetch(
       "http://localhost:5000/api/scores/leaderboard?game=minesweeper&limit=10"
@@ -43,14 +42,15 @@ export function initMinesweeper() {
       );
   }
 
+  // ---- updated submitScore using getPlayerInfo + userId ----
   function submitScore(scoreValue) {
-    if (typeof getPlayerInfo !== "function") {
+    if (typeof window.getPlayerInfo !== "function") {
       console.error("getPlayerInfo is not available");
       return;
     }
 
-    const player = getPlayerInfo();
-    if (!player || !player.id || !player.name) {
+    const player = window.getPlayerInfo();
+    if (!player || !player.name) {
       console.error("Invalid player info", player);
       return;
     }
@@ -59,12 +59,13 @@ export function initMinesweeper() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken") || ""}`,
       },
       body: JSON.stringify({
-        playerId: player.id,
-        username: player.name,
         gameKey: "minesweeper",
         value: scoreValue,
+        userId: player.isGuest ? null : player.id,
+        username: player.name,
       }),
     })
       .then((res) => res.json())
@@ -173,7 +174,7 @@ export function initMinesweeper() {
         timeMs / 100
       ) / 10}s!`;
       gameOver = true;
-      // higher is better, so invert time (10,000 - seconds)
+      // higher is better, so invert time (10,000 - seconds * 10)
       const scoreValue = Math.max(0, 10000 - Math.floor(timeMs / 10));
       submitScore(scoreValue);
     }

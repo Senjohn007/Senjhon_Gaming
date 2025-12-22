@@ -4,9 +4,7 @@ export function initBattleship() {
   const cpuGridEl = document.getElementById("bship-cpu-grid");
   const statusEl = document.getElementById("bship-status");
   const resetBtn = document.getElementById("bship-reset");
-  const leaderboardBody = document.querySelector(
-    "#bship-leaderboard tbody"
-  );
+  const leaderboardBody = document.querySelector("#bship-leaderboard tbody");
 
   if (!playerGridEl || !cpuGridEl || !statusEl || !resetBtn || !leaderboardBody) {
     return;
@@ -19,6 +17,7 @@ export function initBattleship() {
   let currentTurn; // "player" or "cpu"
   let gameOver;
 
+  // ---- leaderboard loader ----
   function loadLeaderboard() {
     fetch(
       "http://localhost:5000/api/scores/leaderboard?game=battleship&limit=10"
@@ -40,13 +39,14 @@ export function initBattleship() {
       );
   }
 
+  // ---- updated submitScore using getPlayerInfo + userId ----
   function submitScore(scoreValue) {
-    if (typeof getPlayerInfo !== "function") {
+    if (typeof window.getPlayerInfo !== "function") {
       console.error("getPlayerInfo is not available");
       return;
     }
-    const player = getPlayerInfo();
-    if (!player || !player.id || !player.name) {
+    const player = window.getPlayerInfo();
+    if (!player || !player.name) {
       console.error("Invalid player info", player);
       return;
     }
@@ -55,12 +55,13 @@ export function initBattleship() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken") || ""}`,
       },
       body: JSON.stringify({
-        playerId: player.id,
-        username: player.name,
         gameKey: "battleship",
         value: scoreValue,
+        userId: player.isGuest ? null : player.id,
+        username: player.name,
       }),
     })
       .then((res) => res.json())
@@ -228,7 +229,6 @@ export function initBattleship() {
         submitScore(scoreValue);
         return;
       }
-      // CPU keeps shooting? To keep it simple, just switch back.
       currentTurn = "player";
       statusEl.textContent += " Your turn.";
     } else {

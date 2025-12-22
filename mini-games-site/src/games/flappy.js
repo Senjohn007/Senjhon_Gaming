@@ -2,9 +2,7 @@
 export function initFlappy() {
   const canvas = document.getElementById("flappy-canvas");
   const statusEl = document.getElementById("flappy-status");
-  const leaderboardBody = document.querySelector(
-    "#flappy-leaderboard tbody"
-  );
+  const leaderboardBody = document.querySelector("#flappy-leaderboard tbody");
 
   if (!canvas || !statusEl || !leaderboardBody) return;
 
@@ -25,6 +23,7 @@ export function initFlappy() {
   const pipeInterval = 1500; // ms
   let lastPipeTime = 0;
 
+  // ---- leaderboard loader ----
   function loadLeaderboard() {
     fetch(
       "http://localhost:5000/api/scores/leaderboard?game=flappy&limit=10"
@@ -46,26 +45,29 @@ export function initFlappy() {
       );
   }
 
+  // ---- updated submitScore using getPlayerInfo + userId ----
   function submitScore(scoreValue) {
-    if (typeof getPlayerInfo !== "function") {
+    if (typeof window.getPlayerInfo !== "function") {
       console.error("getPlayerInfo is not available");
       return;
     }
-    const player = getPlayerInfo();
-    if (!player || !player.id || !player.name) {
+    const player = window.getPlayerInfo();
+    if (!player || !player.name) {
       console.error("Invalid player info", player);
       return;
     }
+
     fetch("http://localhost:5000/api/scores", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken") || ""}`,
       },
       body: JSON.stringify({
-        playerId: player.id,
-        username: player.name,
         gameKey: "flappy",
         value: scoreValue,
+        userId: player.isGuest ? null : player.id,
+        username: player.name,
       }),
     })
       .then((res) => res.json())

@@ -2,9 +2,7 @@
 export function initAsteroids() {
   const canvas = document.getElementById("asteroids-canvas");
   const statusEl = document.getElementById("asteroids-status");
-  const leaderboardBody = document.querySelector(
-    "#asteroids-leaderboard tbody"
-  );
+  const leaderboardBody = document.querySelector("#asteroids-leaderboard tbody");
 
   if (!canvas || !statusEl || !leaderboardBody) return;
 
@@ -32,6 +30,7 @@ export function initAsteroids() {
   const BULLET_SPEED = 4.0;
   const BULLET_LIFETIME = 60; // frames
 
+  // ---- leaderboard loader ----
   function loadLeaderboard() {
     fetch(
       "http://localhost:5000/api/scores/leaderboard?game=asteroids&limit=10"
@@ -53,13 +52,15 @@ export function initAsteroids() {
       );
   }
 
+  // ---- shared submitScore for this game ----
   function submitScore(scoreValue) {
-    if (typeof getPlayerInfo !== "function") {
+    if (typeof window.getPlayerInfo !== "function") {
       console.error("getPlayerInfo is not available");
       return;
     }
-    const player = getPlayerInfo();
-    if (!player || !player.id || !player.name) {
+
+    const player = window.getPlayerInfo();
+    if (!player || !player.name) {
       console.error("Invalid player info", player);
       return;
     }
@@ -68,12 +69,13 @@ export function initAsteroids() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken") || ""}`,
       },
       body: JSON.stringify({
-        playerId: player.id,
-        username: player.name,
         gameKey: "asteroids",
         value: scoreValue,
+        userId: player.isGuest ? null : player.id,
+        username: player.name,
       }),
     })
       .then((res) => res.json())
