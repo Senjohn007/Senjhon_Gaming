@@ -1,13 +1,22 @@
 // src/pages/SnakePage.jsx
 import React, { useEffect } from "react";
 import { initSnake } from "../games/snake";
+import { useSettings } from "../context/SettingsContext.jsx";
 
 export default function SnakePage() {
+  const { settings } = useSettings();
+
+  // compute delay based on difficulty
+  const tickDelay =
+    settings.difficulty === "easy" ? 160 :
+    settings.difficulty === "hard" ? 80 : 120;
+
   useEffect(() => {
     if (typeof initSnake === "function") {
-      initSnake();
+      // pass tickDelay so the game loop can use it
+      initSnake({ tickDelay });
     }
-  }, []);
+  }, [tickDelay]);
 
   return (
     <main className="min-h-[calc(100vh-80px)] bg-gradient-to-b from-slate-950 via-slate-900 to-black text-slate-100">

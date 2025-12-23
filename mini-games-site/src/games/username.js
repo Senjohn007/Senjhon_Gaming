@@ -1,47 +1,75 @@
 // src/games/username.js
-import { getCurrentUser } from "../auth"; // adjust path
+import { getCurrentUser } from "../auth"; // path is correct in your setup
+
+const GUEST_ID_KEY = "guestPlayerId";
+const GUEST_NAME_KEY = "guestName";
+
+function ensureGuestId() {
+  let id = localStorage.getItem(GUEST_ID_KEY);
+  if (!id) {
+    id = "guest-" + Math.random().toString(36).slice(2);
+    localStorage.setItem(GUEST_ID_KEY, id);
+  }
+  return id;
+}
 
 export function initUsernameUI() {
   const input = document.getElementById("player-name");
   const saveBtn = document.getElementById("save-name");
 
-  const user = getCurrentUser();
+  const user = getCurrentUser(); // may be null if not logged in
 
+  // initialise input
   if (input) {
-    input.value = user ? user.name : "Guest";
-    input.readOnly = !!user; // if logged in, lock the name
+    if (user) {
+      input.value = user.name;
+      input.readOnly = true; // logged-in name is fixed
+    } else {
+      input.value =
+        localStorage.getItem(GUEST_NAME_KEY) || "Guest";
+      input.readOnly = false;
+    }
   }
 
+  // guest name save button
   if (saveBtn) {
-    // If you still want guests to save a temporary name:
-    saveBtn.replaceWith(saveBtn.cloneNode(true));
-    const freshBtn = document.getElementById("save-name");
+    // remove old listeners if React re-mounted
+    const freshBtn = saveBtn.cloneNode(true);
+    saveBtn.replaceWith(freshBtn);
+
     freshBtn.addEventListener("click", () => {
-      if (user) {
-        alert(`You are logged in as ${user.name}`);
+      const currentUser = getCurrentUser();
+      if (currentUser) {
+        alert(`You are logged in as ${currentUser.name}`);
         return;
       }
+      if (!input) return;
+
       const name = input.value.trim() || "Guest";
-      localStorage.setItem("guestName", name);
+      localStorage.setItem(GUEST_NAME_KEY, name);
       alert(`Saved name: ${name}`);
     });
   }
 
-  // global helper used by game scripts
+  // global helper used by all game scripts
   window.getPlayerInfo = function () {
-    const u = getCurrentUser();
-    if (u) {
+    const currentUser = getCurrentUser();
+    if (currentUser) {
       return {
-        id: u.id,
-        name: u.name,
+        id: currentUser.id || currentUser._id, // depending on backend shape
+        name: currentUser.name,
         isGuest: false,
       };
     }
 
-    // fallback for guests
+    // guest fallback
+    const guestId = ensureGuestId();
+    const guestName =
+      localStorage.getItem(GUEST_NAME_KEY) || "Guest";
+
     return {
-      id: localStorage.getItem("playerId") || "guest-" + Math.random().toString(36).slice(2),
-      name: localStorage.getItem("guestName") || "Guest",
+      id: guestId,
+      name: guestName,
       isGuest: true,
     };
   };

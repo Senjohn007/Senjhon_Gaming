@@ -1,5 +1,5 @@
 // src/games/snake.js
-export function initSnake() {
+export function initSnake({ tickDelay = 120 } = {}) {
   const canvas = document.getElementById("snake-canvas");
   const statusDiv = document.getElementById("snake-status");
 
@@ -43,7 +43,7 @@ export function initSnake() {
       );
   }
 
-  // UPDATED: use shared submitScore pattern with auth + gameKey
+  // uses shared submitScore pattern with auth + gameKey
   function submitScore(scoreValue) {
     if (typeof window.getPlayerInfo !== "function") {
       console.error("getPlayerInfo is not available");
@@ -160,7 +160,8 @@ export function initSnake() {
       running = true;
       statusDiv.textContent = "Game in progress...";
       if (gameLoop) clearInterval(gameLoop);
-      gameLoop = setInterval(update, 120);
+      // use configurable delay
+      gameLoop = setInterval(update, tickDelay);
     }
   }
 

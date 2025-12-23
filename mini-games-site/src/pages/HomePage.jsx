@@ -1,4 +1,4 @@
-// src/pages/HomePage.jsx
+//// src/pages/HomePage.jsx
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { initUsernameUI } from "../games/username";
@@ -10,7 +10,10 @@ export default function HomePage() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
+    // load logged-in user (if any)
     setUser(getCurrentUser());
+
+    // set up global getPlayerInfo + optional guest name UI
     if (typeof initUsernameUI === "function") {
       initUsernameUI();
     }
@@ -68,14 +71,10 @@ export default function HomePage() {
         </div>
 
         {/* cards grid */}
-        <div
-          className="grid gap-6 md:grid-cols-2 lg:grid-cols-3
-                     animate-fade-up"
-        >
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 animate-fade-up">
           {/* Roll Dice */}
           <div className="group relative overflow-hidden rounded-2xl bg-slate-900/60 border border-slate-700/60 shadow-[0_18px_40px_rgba(15,23,42,0.9)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_24px_70px_rgba(168,85,247,0.75)] hover:border-purple-400/80">
             <div className="absolute inset-px rounded-2xl bg-gradient-to-br from-purple-500/10 via-slate-900 to-slate-950 pointer-events-none" />
-            {/* glow on hover */}
             <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-2xl bg-purple-500/15" />
             <div className="relative p-5 flex flex-col gap-3">
               <h3 className="text-lg font-semibold tracking-wide text-slate-50">
@@ -93,7 +92,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Rock Paper Scissors */}
+ {/* Rock Paper Scissors */}
           <div className="group relative overflow-hidden rounded-2xl bg-slate-900/60 border border-slate-700/60 shadow-[0_18px_40px_rgba(15,23,42,0.9)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_24px_70px_rgba(16,185,129,0.75)] hover:border-emerald-400/80">
             <div className="absolute inset-px rounded-2xl bg-gradient-to-br from-emerald-400/10 via-slate-900 to-slate-950 pointer-events-none" />
             <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-2xl bg-emerald-400/15" />
@@ -317,3 +316,4 @@ export default function HomePage() {
     </section>
   );
 }
+
