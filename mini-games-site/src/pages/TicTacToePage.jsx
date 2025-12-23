@@ -1,12 +1,16 @@
 // src/pages/TicTacToePage.jsx
 import React, { useEffect } from "react";
-import { initTicTacToe } from "../games/tictactoe";
+import { initTicTacToe, destroyTicTacToe } from "../games/tictactoe";
 
 export default function TicTacToePage() {
   useEffect(() => {
-    if (typeof initTicTacToe === "function") {
-      initTicTacToe();
-    }
+    initTicTacToe();
+
+    return () => {
+      if (typeof destroyTicTacToe === "function") {
+        destroyTicTacToe();
+      }
+    };
   }, []);
 
   return (
@@ -86,7 +90,7 @@ export default function TicTacToePage() {
                 id="ttt-grid"
                 className="tictactoe-grid grid grid-cols-3 gap-2 mt-3 max-w-xs mx-auto"
               >
-                {/* Cells filled by JS; ensure JS adds compatible cell styling (or you can add base .tictactoe-cell styles in CSS). */}
+                {/* Cells filled by JS */}
               </div>
 
               <div
@@ -127,7 +131,13 @@ export default function TicTacToePage() {
                     <th className="py-2 text-right">Score</th>
                   </tr>
                 </thead>
-                <tbody>{/* rows filled by JS */}</tbody>
+                <tbody>
+                  <tr id="ttt-leaderboard-empty-row">
+                    <td colSpan={2} className="py-2 text-center text-slate-500">
+                      No scores yet.
+                    </td>
+                  </tr>
+                </tbody>
               </table>
             </div>
           </div>

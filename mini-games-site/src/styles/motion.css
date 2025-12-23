@@ -1,0 +1,89 @@
+/* full viewport animated gradient */
+.motion-layer-gradient {
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  background: radial-gradient(circle at top, #020617 0%, #020617 30%, #020617 60%, #000 100%);
+  background-size: 200% 200%;
+  animation: motion-bg-pan 24s ease-in-out infinite;
+}
+
+/* floating blurred lights */
+.motion-blob {
+  position: fixed;
+  width: 22rem;
+  height: 22rem;
+  border-radius: 999px;
+  filter: blur(60px);
+  opacity: 0.85;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: -2;
+}
+
+.motion-blob--purple {
+  background: rgba(168, 85, 247, 0.9);
+  top: -6rem;
+  left: -4rem;
+  animation: motion-blob-1 26s ease-in-out infinite;
+}
+
+.motion-blob--cyan {
+  background: rgba(45, 212, 191, 0.85);
+  bottom: -10rem;
+  right: -4rem;
+  animation: motion-blob-2 32s ease-in-out infinite;
+}
+
+/* subtle grid on top of lights */
+.motion-layer-grid {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.18;
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.35) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.25) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+/* keyframes */
+@keyframes motion-bg-pan {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes motion-blob-1 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  30% {
+    transform: translate3d(18%, -10%, 0) scale(1.15);
+  }
+  60% {
+    transform: translate3d(-12%, 12%, 0) scale(0.9);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes motion-blob-2 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  40% {
+    transform: translate3d(-20%, -6%, 0) scale(1.2);
+  }
+  80% {
+    transform: translate3d(12%, 16%, 0) scale(0.85);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}

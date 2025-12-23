@@ -1,5 +1,23 @@
 // src/games/tictactoe.js
+
+let cleanupFns = [];
+
+// optional destroy function to remove listeners when React unmounts
+export function destroyTicTacToe() {
+  cleanupFns.forEach((fn) => {
+    try {
+      fn();
+    } catch (e) {
+      console.error("Error during TicTacToe cleanup:", e);
+    }
+  });
+  cleanupFns = [];
+}
+
 export function initTicTacToe() {
+  // reset any previous listeners
+  destroyTicTacToe();
+
   let board = ["", "", "", "", "", "", "", "", ""];
   let currentPlayer = "X";
   let gameRunning = false;
@@ -26,6 +44,7 @@ export function initTicTacToe() {
     !roundInfoSpan ||
     !scoreInfoSpan
   ) {
+    console.warn("TicTacToe: required elements not found");
     return;
   }
 
@@ -44,7 +63,20 @@ export function initTicTacToe() {
       .then((rows) => {
         const tbody = document.querySelector("#ttt-leaderboard tbody");
         if (!tbody) return;
+
         tbody.innerHTML = "";
+
+        if (!rows || rows.length === 0) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td colspan="2" style="text-align:center; color:#94a3b8; padding:8px;">
+              No scores yet.
+            </td>
+          `;
+          tbody.appendChild(tr);
+          return;
+        }
+
         rows.forEach((row, index) => {
           const tr = document.createElement("tr");
           tr.innerHTML = `
@@ -56,10 +88,19 @@ export function initTicTacToe() {
       })
       .catch((err) => {
         console.error("Error loading Tic Tac Toe leaderboard:", err);
+        const tbody = document.querySelector("#ttt-leaderboard tbody");
+        if (!tbody) return;
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="2" style="text-align:center; color:#f97373; padding:8px;">
+              Failed to load scores.
+            </td>
+          </tr>
+        `;
       });
   }
 
-  // ---- updated submitScore using getPlayerInfo + userId ----
+  // ---- submitScore ----
   function submitScore(scoreValue, resultText) {
     if (typeof window.getPlayerInfo !== "function") {
       console.error("getPlayerInfo is not available");
@@ -100,12 +141,16 @@ export function initTicTacToe() {
     grid.innerHTML = "";
     board.forEach((cell, index) => {
       const btn = document.createElement("button");
-      btn.className = "tictactoe-cell";
+      // visible 3x3 grid cell
+      btn.className =
+        "tictactoe-cell h-16 w-16 sm:h-20 sm:w-20 flex items-center justify-center " +
+        "text-2xl sm:text-3xl font-bold rounded-xl border border-slate-600 " +
+        "bg-slate-900/80 text-slate-100 hover:bg-slate-800/80 transition-colors disabled:opacity-60";
       btn.textContent = cell;
 
       btn.disabled = !!cell || !gameRunning || currentPlayer !== "X";
 
-      btn.addEventListener("click", () => {
+      const handler = () => {
         if (!gameRunning || currentPlayer !== "X" || board[index]) return;
         board[index] = "X";
         checkGameState();
@@ -116,7 +161,10 @@ export function initTicTacToe() {
           status.textContent = "Computer's turn...";
           setTimeout(computerMove, 400);
         }
-      });
+      };
+
+      btn.addEventListener("click", handler);
+      cleanupFns.push(() => btn.removeEventListener("click", handler));
 
       grid.appendChild(btn);
     });
@@ -161,7 +209,7 @@ export function initTicTacToe() {
     computerWins = 0;
     matchActive = true;
 
-    statusBar.style.display = "block";
+    statusBar.style.display = "flex";
     updateStatusBar();
     status.textContent = "Match started! Your turn.";
     resetBoardOnly();
@@ -269,28 +317,24 @@ export function initTicTacToe() {
     renderBoard();
   }
 
-  // clean listeners in case of re-mount
-  resetBtn.replaceWith(resetBtn.cloneNode(true));
-  const freshResetBtn = document.getElementById("ttt-reset");
+  // ----------------- DOM listeners -----------------
+  const resetHandler = () => resetBoardOnly();
+  resetBtn.addEventListener("click", resetHandler);
+  cleanupFns.push(() => resetBtn.removeEventListener("click", resetHandler));
 
-  startMatchBtn.replaceWith(startMatchBtn.cloneNode(true));
-  const freshStartMatchBtn = document.getElementById("ttt-start-match-btn");
+  const startHandler = () => startMatch();
+  startMatchBtn.addEventListener("click", startHandler);
+  cleanupFns.push(() =>
+    startMatchBtn.removeEventListener("click", startHandler)
+  );
 
-  resetMatchBtn.replaceWith(resetMatchBtn.cloneNode(true));
-  const freshResetMatchBtn = document.getElementById("ttt-reset-match-btn");
+  const resetMatchHandler = () => resetMatch();
+  resetMatchBtn.addEventListener("click", resetMatchHandler);
+  cleanupFns.push(() =>
+    resetMatchBtn.removeEventListener("click", resetMatchHandler)
+  );
 
-  freshResetBtn.addEventListener("click", () => {
-    resetBoardOnly();
-  });
-
-  freshStartMatchBtn.addEventListener("click", () => {
-    startMatch();
-  });
-
-  freshResetMatchBtn.addEventListener("click", () => {
-    resetMatch();
-  });
-
+  // initial state
   resetMatch();
   loadTttLeaderboard();
 }
