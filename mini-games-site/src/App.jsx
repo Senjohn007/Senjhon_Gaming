@@ -1,6 +1,8 @@
 // src/App.jsx
 import React, { useEffect, useState } from "react";
 import { Routes, Route, Link, useLocation } from "react-router-dom";
+
+// game pages
 import HomePage from "./pages/HomePage.jsx";
 import RollDicePage from "./pages/RollDicePage.jsx";
 import HangmanPage from "./pages/HangmanPage.jsx";
@@ -22,9 +24,14 @@ import RegisterPage from "./pages/RegisterPage.jsx";
 // auth helpers
 import { getCurrentUser, logout } from "./auth";
 
+// global background audio (uses SettingsContext)
+import GlobalAudio from "./components/GlobalAudio.jsx";
+import SettingsDrawer from "./components/SettingsDrawer.jsx";
+
 function AppShell() {
   const [user, setUser] = useState(null);
   const location = useLocation();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     setUser(getCurrentUser());
@@ -38,6 +45,9 @@ function AppShell() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+      {/* global music for whole app */}
+      <GlobalAudio />
+
       {/* header */}
       <header className="border-b border-slate-800/80 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950/95 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 py-4 md:py-5 flex flex-col gap-4">
@@ -54,6 +64,7 @@ function AppShell() {
             </div>
 
             {/* auth area */}
+
             <div className="flex items-center justify-end gap-3 text-sm md:text-base shrink-0">
               {user ? (
                 <>
@@ -65,12 +76,33 @@ function AppShell() {
                       {user.name}
                     </span>
                   </span>
-                  <button
-                    onClick={handleLogout}
-                    className="px-4 py-1.5 rounded-full bg-slate-900 border border-slate-700 text-slate-200 hover:bg-slate-800 transition-colors text-sm"
-                  >
-                    Logout
-                  </button>
+                <button
+  onClick={handleLogout}
+  className="px-4 py-1.5 rounded-full
+             bg-slate-900 border border-slate-700 text-slate-200 text-sm
+             shadow-sm
+             hover:bg-slate-800 hover:border-red-500 hover:text-red-200
+             hover:shadow-red-500/40
+             transition-all duration-200 ease-out
+             hover:-translate-y-0.5 hover:scale-[1.02]
+             focus:outline-none focus:ring-2 focus:ring-red-500/60 focus:ring-offset-2 focus:ring-offset-slate-900"
+>
+  Logout
+</button>
+
+<button
+  onClick={() => setSettingsOpen(true)}
+  className="px-3 py-1.5 rounded-full
+             bg-slate-900 border border-slate-700 text-slate-200 text-xs md:text-sm
+             shadow-sm
+             hover:bg-slate-800 hover:border-indigo-500 hover:text-indigo-200
+             hover:shadow-indigo-500/40
+             transition-all duration-200 ease-out
+             hover:-translate-y-0.5 hover:scale-[1.02]
+             focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:ring-offset-2 focus:ring-offset-slate-900"
+>
+  Settings
+</button>
                 </>
               ) : (
                 <>
@@ -202,7 +234,9 @@ function AppShell() {
 
       <footer className="border-t border-slate-800/80 bg-slate-950/95">
         <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-slate-400">
-          <p>© {new Date().getFullYear()} Senjhon Gaming. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} Senjhon Gaming. All rights reserved.
+          </p>
           <p className="flex items-center gap-2">
             <span className="hidden sm:inline">Powered by</span>
             <span className="font-semibold text-slate-200">
@@ -211,6 +245,11 @@ function AppShell() {
           </p>
         </div>
       </footer>
+
+      <SettingsDrawer
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+      />
     </div>
   );
 }
