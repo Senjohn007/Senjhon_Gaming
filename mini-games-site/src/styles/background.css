@@ -1,0 +1,89 @@
+/* full-page animated gradient */
+.motion-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background: radial-gradient(circle at top, #1f2937, #020617 60%);
+  background-size: 200% 200%;
+  animation: bg-pan 22s ease-in-out infinite;
+}
+
+/* subtle grid overlay */
+.motion-bg-grid {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.18;
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.35) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.25) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+/* floating blurry blobs */
+.motion-bg-blob {
+  position: fixed;
+  width: 22rem;
+  height: 22rem;
+  border-radius: 999px;
+  filter: blur(60px);
+  opacity: 0.8;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.motion-bg-blob--purple {
+  background: rgba(168, 85, 247, 0.8);
+  top: -8rem;
+  left: -6rem;
+  animation: blob-move-1 26s ease-in-out infinite;
+}
+
+.motion-bg-blob--cyan {
+  background: rgba(45, 212, 191, 0.7);
+  bottom: -10rem;
+  right: -4rem;
+  animation: blob-move-2 30s ease-in-out infinite;
+}
+
+/* keyframes */
+@keyframes bg-pan {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes blob-move-1 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(18%, -10%, 0) scale(1.15);
+  }
+  66% {
+    transform: translate3d(-12%, 10%, 0) scale(0.9);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes blob-move-2 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  40% {
+    transform: translate3d(-20%, -6%, 0) scale(1.2);
+  }
+  80% {
+    transform: translate3d(10%, 12%, 0) scale(0.85);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}

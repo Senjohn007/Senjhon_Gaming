@@ -3,59 +3,43 @@ const Score = require("../models/Score_model");
 
 const router = express.Router();
 
-// POST /api/scores  -> save a new score
+// POST /api/scores
 router.post("/", async (req, res) => {
   try {
-    const { playerId, username, gameKey, value } = req.body;
+    const { gameKey, value, userId, username } = req.body;
 
-    if (!playerId || !username || !gameKey || typeof value !== "number") {
+    if (!gameKey || typeof value !== "number" || !username) {
       return res.status(400).json({ message: "Invalid score data" });
     }
 
-    const score = await Score.create({ playerId, username, gameKey, value });
+    const score = await Score.create({
+      gameKey,
+      value,
+      userId: userId || null, // allow null for guests
+      username,
+    });
+
     res.status(201).json(score);
   } catch (err) {
     console.error("Error saving score:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Failed to save score" });
   }
 });
 
-// GET /api/scores/leaderboard?game=snake&limit=10
+// GET /api/scores/leaderboard
 router.get("/leaderboard", async (req, res) => {
   try {
-    const gameKey = req.query.game;
-    const limit = parseInt(req.query.limit) || 10;
+    const { game, limit = 10 } = req.query;
 
-    if (!gameKey) {
-      return res.status(400).json({ message: "game query param is required" });
-    }
-
-    const scores = await Score.find({ gameKey })
+    const query = game ? { gameKey: game } : {};
+    const scores = await Score.find(query)
       .sort({ value: -1, createdAt: 1 })
-      .limit(limit);
+      .limit(Number(limit));
 
     res.json(scores);
   } catch (err) {
-    console.error("Error fetching leaderboard:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-
-router.get("/my-scores", async (req, res) => {
-  try {
-    const { playerId, game } = req.query;
-    if (!playerId || !game) {
-      return res.status(400).json({ message: "playerId and game are required" });
-    }
-
-    const scores = await Score.find({ playerId, gameKey: game })
-      .sort({ value: -1, createdAt: -1 })
-      .limit(10);
-
-    res.json(scores);
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    console.error("Error loading leaderboard:", err);
+    res.status(500).json({ message: "Failed to load leaderboard" });
   }
 });
 
