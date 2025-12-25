@@ -17,9 +17,10 @@ import BattleshipPage from "./pages/BattleshipPage.jsx";
 import FlappyPage from "./pages/FlappyPage.jsx";
 import AsteroidsPage from "./pages/AsteroidsPage.jsx";
 
-// user authentication pages
+// user authentication / profile pages
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
 
 // auth helpers
 import { getCurrentUser, logout } from "./auth";
@@ -63,8 +64,7 @@ function AppShell() {
               </span>
             </div>
 
-            {/* auth area */}
-
+            {/* auth + profile + settings */}
             <div className="flex items-center justify-end gap-3 text-sm md:text-base shrink-0">
               {user ? (
                 <>
@@ -76,33 +76,49 @@ function AppShell() {
                       {user.name}
                     </span>
                   </span>
-                <button
-  onClick={handleLogout}
-  className="px-4 py-1.5 rounded-full
-             bg-slate-900 border border-slate-700 text-slate-200 text-sm
-             shadow-sm
-             hover:bg-slate-800 hover:border-red-500 hover:text-red-200
-             hover:shadow-red-500/40
-             transition-all duration-200 ease-out
-             hover:-translate-y-0.5 hover:scale-[1.02]
-             focus:outline-none focus:ring-2 focus:ring-red-500/60 focus:ring-offset-2 focus:ring-offset-slate-900"
->
-  Logout
-</button>
 
-<button
-  onClick={() => setSettingsOpen(true)}
-  className="px-3 py-1.5 rounded-full
-             bg-slate-900 border border-slate-700 text-slate-200 text-xs md:text-sm
-             shadow-sm
-             hover:bg-slate-800 hover:border-indigo-500 hover:text-indigo-200
-             hover:shadow-indigo-500/40
-             transition-all duration-200 ease-out
-             hover:-translate-y-0.5 hover:scale-[1.02]
-             focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:ring-offset-2 focus:ring-offset-slate-900"
->
-  Settings
-</button>
+                  {/* Profile button */}
+                  <Link
+                    to="/profile"
+                    className="px-3 py-1.5 rounded-full
+                               bg-slate-900 border border-slate-700 text-slate-200 text-xs md:text-sm
+                               shadow-sm
+                               hover:bg-slate-800 hover:border-purple-500 hover:text-purple-200
+                               hover:shadow-purple-500/40
+                               transition-all duration-200 ease-out
+                               hover:-translate-y-0.5 hover:scale-[1.02]
+                               focus:outline-none focus:ring-2 focus:ring-purple-500/60 focus:ring-offset-2 focus:ring-offset-slate-900"
+                  >
+                    Profile
+                  </Link>
+
+                  <button
+                    onClick={handleLogout}
+                    className="px-4 py-1.5 rounded-full
+                               bg-slate-900 border border-slate-700 text-slate-200 text-sm
+                               shadow-sm
+                               hover:bg-slate-800 hover:border-red-500 hover:text-red-200
+                               hover:shadow-red-500/40
+                               transition-all duration-200 ease-out
+                               hover:-translate-y-0.5 hover:scale-[1.02]
+                               focus:outline-none focus:ring-2 focus:ring-red-500/60 focus:ring-offset-2 focus:ring-offset-slate-900"
+                  >
+                    Logout
+                  </button>
+
+                  <button
+                    onClick={() => setSettingsOpen(true)}
+                    className="px-3 py-1.5 rounded-full
+                               bg-slate-900 border border-slate-700 text-slate-200 text-xs md:text-sm
+                               shadow-sm
+                               hover:bg-slate-800 hover:border-indigo-500 hover:text-indigo-200
+                               hover:shadow-indigo-500/40
+                               transition-all duration-200 ease-out
+                               hover:-translate-y-0.5 hover:scale-[1.02]
+                               focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:ring-offset-2 focus:ring-offset-slate-900"
+                  >
+                    Settings
+                  </button>
                 </>
               ) : (
                 <>
@@ -226,9 +242,10 @@ function AppShell() {
           <Route path="/flappy" element={<FlappyPage />} />
           <Route path="/asteroids" element={<AsteroidsPage />} />
 
-          {/* auth routes */}
+          {/* auth + profile routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </main>
 
