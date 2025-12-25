@@ -17,11 +17,11 @@ module.exports = {
         },
       },
       animation: {
-        "gradient-bg": "gradient-shift 20s ease-in-out infinite",
+        "gradient-bg": "gradient-shift 4s linear infinite",
         "blob-slow": "blob-move 18s ease-in-out infinite",
         "blob-slower": "blob-move 26s ease-in-out infinite",
       },
-    },
+    }
   },
   plugins: [],
 };
