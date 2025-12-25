@@ -1,24 +1,36 @@
-// src/pages/HomePage.jsx
+// src/pages/HomePage.jsx (updated sections)
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { initUsernameUI } from "../games/username";
 import { getCurrentUser } from "../auth";
+import GameCard from "../components/GameCard.jsx";
 
 export default function HomePage() {
   const [user, setUser] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     // load logged-in user (if any)
     setUser(getCurrentUser());
-
+    
     // set up global getPlayerInfo + optional guest name UI
     if (typeof initUsernameUI === "function") {
       initUsernameUI();
     }
-  }, []); // Added empty dependency array
+    
+    // Trigger page load animation
+    setTimeout(() => setIsLoaded(true), 100);
+  }, []);
 
   return (
-    <section className="relative overflow-hidden min-h-[calc(100vh-80px)] text-slate-100">
+    <section className={`relative overflow-hidden min-h-[calc(100vh-80px)] text-slate-100 transition-opacity duration-1000 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+      {/* Animated floating elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-32 h-32 bg-purple-500/10 rounded-full blur-xl animate-float" />
+        <div className="absolute top-40 right-20 w-24 h-24 bg-blue-500/10 rounded-full blur-xl animate-float animation-delay-2000" />
+        <div className="absolute bottom-20 left-1/4 w-28 h-28 bg-pink-500/10 rounded-full blur-xl animate-float animation-delay-4000" />
+      </div>
+      
       {/* foreground content */}
       <div className="relative max-w-6xl mx-auto px-4 py-12">
         {/* top bar */}
@@ -40,24 +52,24 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* hero */}
-        <div className="text-center mb-10">
+        {/* hero with enhanced animation */}
+        <div className="text-center mb-12">
           <h2
-            className="text-4xl md:text-5xl font-extrabold tracking-tight
+            className="text-5xl md:text-6xl font-extrabold tracking-tight
                        leading-tight md:leading-tight
                        text-transparent bg-clip-text
-                       bg-gradient-to-r from-fuchsia-400 via-purple-300 to-sky-400
-                       animate-gradient-bg"
+                       bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400
+                       animate-gradient-bg mb-4"
           >
             Welcome to Senjhon Gaming
           </h2>
-          <p className="mt-3 text-slate-300 text-sm md:text-base max-w-xl mx-auto">
+          <p className="mt-4 text-slate-300 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
             Choose a mini‑game, chase high scores, and climb the leaderboard.
           </p>
         </div>
 
-        {/* cards grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 animate-fade-up">
+        {/* cards grid with staggered animation */}
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {/* Roll Dice */}
           <GameCard
             title="Roll Dice"
@@ -66,6 +78,7 @@ export default function HomePage() {
             gradientFrom="from-purple-500"
             gradientTo="to-indigo-500"
             hoverColor="purple"
+            icon="🎲"
           />
 
           {/* Rock Paper Scissors */}
@@ -76,6 +89,7 @@ export default function HomePage() {
             gradientFrom="from-emerald-500"
             gradientTo="to-teal-500"
             hoverColor="emerald"
+            icon="✂️"
           />
 
           {/* Hangman */}
@@ -86,6 +100,7 @@ export default function HomePage() {
             gradientFrom="from-rose-500"
             gradientTo="to-orange-500"
             hoverColor="rose"
+            icon="🔤"
           />
 
           {/* Snake */}
@@ -97,6 +112,7 @@ export default function HomePage() {
             gradientTo="to-emerald-500"
             hoverColor="lime"
             textClass="text-slate-900"
+            icon="🐍"
           />
 
           {/* Breakout */}
@@ -107,6 +123,7 @@ export default function HomePage() {
             gradientFrom="from-sky-500"
             gradientTo="to-indigo-500"
             hoverColor="sky"
+            icon="🧱"
           />
 
           {/* Typing Speed */}
@@ -117,6 +134,7 @@ export default function HomePage() {
             gradientFrom="from-fuchsia-500"
             gradientTo="to-pink-500"
             hoverColor="fuchsia"
+            icon="⌨️"
           />
 
           {/* Tic Tac Toe */}
@@ -128,6 +146,7 @@ export default function HomePage() {
             gradientTo="to-orange-500"
             hoverColor="amber"
             textClass="text-slate-900"
+            icon="⭕"
           />
 
           {/* Whack‑a‑Mole */}
@@ -138,6 +157,7 @@ export default function HomePage() {
             gradientFrom="from-red-500"
             gradientTo="to-rose-500"
             hoverColor="red"
+            icon="🔨"
           />
 
           {/* Minesweeper */}
@@ -148,6 +168,7 @@ export default function HomePage() {
             gradientFrom="from-indigo-500"
             gradientTo="to-blue-500"
             hoverColor="indigo"
+            icon="💣"
           />
 
           {/* Battleship */}
@@ -159,6 +180,7 @@ export default function HomePage() {
             gradientTo="to-sky-500"
             hoverColor="cyan"
             textClass="text-slate-900"
+            icon="⚓"
           />
 
           {/* Flappy Bird */}
@@ -170,6 +192,7 @@ export default function HomePage() {
             gradientTo="to-emerald-500"
             hoverColor="green"
             textClass="text-slate-900"
+            icon="🐦"
           />
 
           {/* Asteroids */}
@@ -181,33 +204,10 @@ export default function HomePage() {
             gradientTo="to-amber-500"
             hoverColor="orange"
             textClass="text-slate-900"
+            icon="🚀"
           />
         </div>
       </div>
     </section>
-  );
-}
-
-// Reusable GameCard component
-function GameCard({ title, description, linkTo, gradientFrom, gradientTo, hoverColor, textClass = "text-slate-50" }) {
-  return (
-    <div className={`group relative overflow-hidden rounded-2xl bg-slate-900/60 border border-slate-700/60 shadow-[0_18px_40px_rgba(15,23,42,0.9)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_24px_70px_rgba(168,85,247,0.75)] hover:border-${hoverColor}-400/80`}>
-      <div className={`absolute inset-px rounded-2xl bg-gradient-to-br ${gradientFrom}/10 via-slate-900 to-slate-950 pointer-events-none`} />
-      <div className={`pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-2xl bg-${hoverColor}-500/15`} />
-      <div className="relative p-5 flex flex-col gap-3">
-        <h3 className="text-lg font-semibold tracking-wide text-slate-50">
-          {title}
-        </h3>
-        <p className="text-sm text-slate-300">
-          {description}
-        </p>
-        <Link
-          to={linkTo}
-          className={`mt-2 inline-flex items-center justify-center rounded-full bg-gradient-to-r ${gradientFrom} ${gradientTo} px-4 py-2 text-sm font-semibold ${textClass} shadow-[0_12px_30px_rgba(88,28,135,0.7)] hover:from-${hoverColor}-400 hover:to-${hoverColor}-400 transition-all group-hover:translate-y-0.5`}
-        >
-          Play
-        </Link>
-      </div>
-    </div>
   );
 }
