@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 /* src/index.css (after @tailwind directives) */
 @layer base {
   /* All scrollbars */

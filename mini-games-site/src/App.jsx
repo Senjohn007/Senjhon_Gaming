@@ -29,13 +29,23 @@ import { getCurrentUser, logout } from "./auth";
 import GlobalAudio from "./components/GlobalAudio.jsx";
 import SettingsDrawer from "./components/SettingsDrawer.jsx";
 
+// animated background layer
+import AnimatedBackground from "./components/AnimatedBackground.jsx";
+
 function AppShell() {
   const [user, setUser] = useState(null);
   const location = useLocation();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setUser(getCurrentUser());
+    // Simulate loading state for auth check
+    const timer = setTimeout(() => {
+      setUser(getCurrentUser());
+      setIsLoading(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
   }, [location.pathname]);
 
   function handleLogout() {
@@ -44,13 +54,27 @@ function AppShell() {
     window.location.href = "/";
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+          <p className="mt-4 text-slate-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+    <div className="min-h-screen flex flex-col bg-transparent text-slate-100 relative">
+      {/* global animated background, behind everything */}
+      <AnimatedBackground />
+
       {/* global music for whole app */}
       <GlobalAudio />
 
       {/* header */}
-      <header className="border-b border-slate-800/80 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950/95 backdrop-blur">
+      <header className="border-b border-slate-800/80 bg-gradient-to-r from-slate-950/95 via-slate-900/95 to-slate-950/95 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 py-4 md:py-5 flex flex-col gap-4">
           {/* top row: brand + auth */}
           <div className="flex items-center justify-between gap-4">
@@ -81,7 +105,7 @@ function AppShell() {
                   <Link
                     to="/profile"
                     className="px-3 py-1.5 rounded-full
-                               bg-slate-900 border border-slate-700 text-slate-200 text-xs md:text-sm
+                               bg-slate-900/90 border border-slate-700 text-slate-200 text-xs md:text-sm
                                shadow-sm
                                hover:bg-slate-800 hover:border-purple-500 hover:text-purple-200
                                hover:shadow-purple-500/40
@@ -95,7 +119,7 @@ function AppShell() {
                   <button
                     onClick={handleLogout}
                     className="px-4 py-1.5 rounded-full
-                               bg-slate-900 border border-slate-700 text-slate-200 text-sm
+                               bg-slate-900/90 border border-slate-700 text-slate-200 text-sm
                                shadow-sm
                                hover:bg-slate-800 hover:border-red-500 hover:text-red-200
                                hover:shadow-red-500/40
@@ -109,7 +133,7 @@ function AppShell() {
                   <button
                     onClick={() => setSettingsOpen(true)}
                     className="px-3 py-1.5 rounded-full
-                               bg-slate-900 border border-slate-700 text-slate-200 text-xs md:text-sm
+                               bg-slate-900/90 border border-slate-700 text-slate-200 text-xs md:text-sm
                                shadow-sm
                                hover:bg-slate-800 hover:border-indigo-500 hover:text-indigo-200
                                hover:shadow-indigo-500/40
@@ -124,7 +148,7 @@ function AppShell() {
                 <>
                   <Link
                     to="/login"
-                    className="px-4 py-1.5 rounded-full bg-slate-900 border border-slate-700 text-slate-200 hover:bg-slate-800 transition-colors text-sm"
+                    className="px-4 py-1.5 rounded-full bg-slate-900/90 border border-slate-700 text-slate-200 hover:bg-slate-800 transition-colors text-sm"
                   >
                     Login
                   </Link>
