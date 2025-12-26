@@ -1,5 +1,5 @@
 // src/games/rps.js
-export function initRps() {
+export function initRps({ onScoreSaved } = {}) {
   const ROCK = "r";
   const PAPER = "p";
   const SCISSORS = "s";
@@ -43,7 +43,7 @@ export function initRps() {
   let computerWins = 0;
   let matchActive = false;
 
-  // ---- leaderboard loader ----
+  // ---- leaderboard loader (fallback for non-React callers) ----
   function loadRpsLeaderboard() {
     fetch("http://localhost:5000/api/scores/leaderboard?game=rps&limit=10")
       .then((res) => res.json())
@@ -95,7 +95,12 @@ export function initRps() {
       .then((res) => res.json())
       .then((data) => {
         console.log("RPS result saved:", data, "=>", resultText);
-        loadRpsLeaderboard();
+        // Let React (or caller) decide how to reload, fallback to old DOM way
+        if (typeof onScoreSaved === "function") {
+          onScoreSaved();
+        } else {
+          loadRpsLeaderboard();
+        }
       })
       .catch((err) => {
         console.error("Error saving RPS result:", err);
