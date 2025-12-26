@@ -8,8 +8,37 @@ export default function AsteroidsPage() {
   }, []);
 
   return (
-    <main className="min-h-[calc(100vh-80px)] bg-gradient-to-b from-slate-950 via-slate-900 to-black text-slate-100">
-      <div className="max-w-4xl mx-auto px-4 py-10">
+    <main className="min-h-[calc(100vh-80px)] relative overflow-hidden">
+      {/* Subtle animated space background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-black"></div>
+        
+        {/* Animated stars */}
+        <div className="absolute inset-0">
+          {[...Array(50)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute rounded-full bg-white animate-pulse"
+              style={{
+                width: `${Math.random() * 2 + 1}px`,
+                height: `${Math.random() * 2 + 1}px`,
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 5}s`,
+                animationDuration: `${Math.random() * 3 + 2}s`,
+                opacity: Math.random() * 0.8 + 0.2
+              }}
+            />
+          ))}
+        </div>
+        
+        {/* Slow moving nebula effect */}
+        <div className="absolute top-0 left-0 w-96 h-96 bg-purple-900/5 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-900/5 rounded-full blur-3xl animate-float animation-delay-4000"></div>
+      </div>
+      
+      {/* Main content */}
+      <div className="relative max-w-4xl mx-auto px-4 py-10">
         <div className="mb-6">
           <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-sky-300 drop-shadow-[0_0_24px_rgba(56,189,248,0.6)]">
             Asteroids
