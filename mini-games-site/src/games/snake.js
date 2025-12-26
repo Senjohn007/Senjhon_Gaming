@@ -1,5 +1,5 @@
 // src/games/snake.js
-export function initSnake({ tickDelay = 120 } = {}) {
+export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
   const canvas = document.getElementById("snake-canvas");
   const statusDiv = document.getElementById("snake-status");
 
@@ -22,6 +22,7 @@ export function initSnake({ tickDelay = 120 } = {}) {
     food.y = Math.floor(Math.random() * tiles);
   }
 
+  // keep this for initial page load (first time)
   function loadLeaderboard() {
     fetch("http://localhost:5000/api/scores/leaderboard?game=snake&limit=10")
       .then((res) => res.json())
@@ -70,7 +71,13 @@ export function initSnake({ tickDelay = 120 } = {}) {
       .then((res) => res.json())
       .then((data) => {
         console.log("Snake score saved:", data);
-        loadLeaderboard();
+        // let React (or outside) decide how to reload
+        if (typeof onScoreSaved === "function") {
+          onScoreSaved();
+        } else {
+          // fallback: keep old behavior if callback not passed
+          loadLeaderboard();
+        }
       })
       .catch((err) => {
         console.error("Error saving snake score:", err);

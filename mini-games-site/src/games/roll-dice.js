@@ -1,5 +1,5 @@
 // src/games/roll-dice.js
-export function initRollDice() {
+export function initRollDice({ onScoreSaved } = {}) {
   const rollButton = document.getElementById("roll-button");
   const resultDiv = document.getElementById("dice-result");
 
@@ -28,30 +28,9 @@ export function initRollDice() {
   let sessionTotal = 0;
   let sessionActive = false;
 
-  function loadRollLeaderboard() {
-    fetch(
-      "http://localhost:5000/api/scores/leaderboard?game=roll-dice&limit=10"
-    )
-      .then((res) => res.json())
-      .then((rows) => {
-        const tbody = document.querySelector("#roll-leaderboard tbody");
-        if (!tbody) return;
-        tbody.innerHTML = "";
-        rows.forEach((row, index) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${index + 1}. ${row.username}</td>
-            <td style="text-align:right;">${row.value}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      })
-      .catch((err) => {
-        console.error("Error loading Roll Dice leaderboard:", err);
-      });
-  }
+  // remove DOM-based leaderboard updates completely
 
-  // UPDATED: use shared submitScore pattern with auth + gameKey
+  // use shared submitScore pattern with auth + gameKey
   function submitScore(scoreValue) {
     if (typeof window.getPlayerInfo !== "function") {
       console.error("getPlayerInfo is not available");
@@ -78,7 +57,10 @@ export function initRollDice() {
       .then((res) => res.json())
       .then((data) => {
         console.log("Roll Dice score saved:", data);
-        loadRollLeaderboard();
+        // tell React to reload leaderboard
+        if (typeof onScoreSaved === "function") {
+          onScoreSaved();
+        }
       })
       .catch((err) => {
         console.error("Error saving Roll Dice score:", err);
@@ -163,5 +145,4 @@ export function initRollDice() {
   freshResetMatchBtn.addEventListener("click", resetSessionState);
 
   resetSessionState();
-  loadRollLeaderboard();
 }

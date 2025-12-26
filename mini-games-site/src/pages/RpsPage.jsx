@@ -1,20 +1,117 @@
 // src/pages/RpsPage.jsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { initRps } from "../games/rps";
 
 export default function RpsPage() {
-  useEffect(() => {
-    if (typeof initRps === "function") {
-      initRps();
-    }
+  const [scores, setScores] = useState([]);
+
+  const loadLeaderboard = useCallback(() => {
+    fetch("http://localhost:5000/api/scores/leaderboard?game=rps&limit=10")
+      .then((res) => res.json())
+      .then((rows) => setScores(rows))
+      .catch((err) =>
+        console.error("Error loading RPS leaderboard (React):", err)
+      );
   }, []);
 
+  // initial load
+  useEffect(() => {
+    loadLeaderboard();
+  }, [loadLeaderboard]);
+
+  useEffect(() => {
+    if (typeof initRps === "function") {
+      // pass callback so game can trigger leaderboard refresh
+      initRps({ onScoreSaved: loadLeaderboard });
+    }
+  }, [loadLeaderboard]);
+
   return (
-    <main className="min-h-[calc(100vh-80px)] bg-gradient-to-b from-slate-950 via-slate-900 to-black text-slate-100">
-      <div className="max-w-4xl mx-auto px-4 py-10">
+    <main className="min-h-[calc(100vh-80px)] relative overflow-hidden">
+      {/* Competitive-themed animated background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-black"></div>
+        
+        {/* Floating RPS symbols */}
+        <div className="absolute inset-0">
+          {/* Rock symbols */}
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={`rock-${i}`}
+              className="absolute opacity-15"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                animation: `float ${Math.random() * 20 + 15}s ease-in-out infinite`,
+                animationDelay: `${Math.random() * 10}s`,
+              }}
+            >
+              <div className="w-10 h-10 bg-gray-700/20 rounded-full flex items-center justify-center">
+                <span className="text-2xl">🗻</span>
+              </div>
+            </div>
+          ))}
+          
+          {/* Paper symbols */}
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={`paper-${i}`}
+              className="absolute opacity-15"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                animation: `float ${Math.random() * 20 + 15}s ease-in-out infinite`,
+                animationDelay: `${Math.random() * 10}s`,
+              }}
+            >
+              <div className="w-10 h-10 bg-blue-700/20 rounded-full flex items-center justify-center">
+                <span className="text-2xl">📃</span>
+              </div>
+            </div>
+          ))}
+          
+          {/* Scissors symbols */}
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={`scissors-${i}`}
+              className="absolute opacity-15"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                animation: `float ${Math.random() * 20 + 15}s ease-in-out infinite`,
+                animationDelay: `${Math.random() * 10}s`,
+              }}
+            >
+              <div className="w-10 h-10 bg-red-700/20 rounded-full flex items-center justify-center">
+                <span className="text-2xl">⚔️</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Battle lines */}
+        <div className="absolute inset-0 opacity-5">
+          <div
+            className="h-full w-full"
+            style={{
+              backgroundImage:
+                "linear-gradient(45deg, rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(-45deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+              backgroundSize: "40px 40px",
+            }}
+          ></div>
+        </div>
+        
+        {/* Competitive energy zones */}
+        <div className="absolute top-20 left-20 w-32 h-32 bg-gray-500/10 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-20 right-20 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl animate-float animation-delay-4000"></div>
+        <div className="absolute top-1/2 left-1/3 w-36 h-36 bg-red-500/10 rounded-full blur-3xl animate-float animation-delay-2000"></div>
+      </div>
+      
+      {/* Main content */}
+      <div className="relative max-w-4xl mx-auto px-4 py-10">
         {/* title + description */}
         <div className="mb-6">
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-sky-300 drop-shadow-[0_0_24px_rgba(56,189,248,0.6)]">
+          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-emerald-300 drop-shadow-[0_0_24px_rgba(110,231,183,0.6)]">
             Rock Paper Scissors
           </h2>
           <p className="mt-2 text-sm md:text-base text-slate-300">
@@ -24,7 +121,10 @@ export default function RpsPage() {
 
         <div className="grid gap-8 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] items-start">
           {/* game panel */}
-          <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_20px_50px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5">
+          <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_20px_50px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5 relative overflow-hidden">
+            {/* Competitive effect at top */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-50"></div>
+            
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
                 RPS Match
@@ -49,7 +149,7 @@ export default function RpsPage() {
                 <select
                   id="rps-rounds-select"
                   defaultValue="3"
-                  className="h-9 rounded-lg bg-slate-950 border border-slate-700 px-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                  className="h-9 rounded-lg bg-slate-950 border border-slate-700 px-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="3">Best of 3</option>
                   <option value="5">Best of 5</option>
@@ -58,7 +158,7 @@ export default function RpsPage() {
                 <button
                   id="rps-start-match-btn"
                   type="button"
-                  className="h-9 px-3 rounded-lg bg-sky-500 hover:bg-sky-400 active:bg-sky-600 text-xs sm:text-sm font-semibold text-slate-900 shadow-[0_10px_25px_rgba(56,189,248,0.45)] transition-colors"
+                  className="h-9 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-xs sm:text-sm font-semibold text-slate-900 shadow-[0_10px_25px_rgba(110,231,183,0.45)] transition-colors"
                 >
                   Start Match
                 </button>
@@ -110,7 +210,7 @@ export default function RpsPage() {
                 className="feedback mt-3 text-center text-sm text-slate-200 min-h-[1.25rem]"
                 id="rps-result"
               >
-                Choose “Start Match” to play.
+                Choose "Start Match" to play.
               </div>
 
               <div
@@ -121,7 +221,10 @@ export default function RpsPage() {
           </div>
 
           {/* leaderboard */}
-          <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_18px_40px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5">
+          <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_18px_40px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5 relative overflow-hidden">
+            {/* Competitive effect at top */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-50"></div>
+            
             <h3 className="text-lg font-semibold text-slate-50 mb-2">
               Top RPS Scores
             </h3>
@@ -140,8 +243,38 @@ export default function RpsPage() {
                     <th className="py-2 text-right">Score</th>
                   </tr>
                 </thead>
-                <tbody>{/* rows filled by JS */}</tbody>
+                <tbody>
+                  {scores.map((row, index) => (
+                    <tr key={row._id || index}>
+                      <td>{index + 1}. {row.username}</td>
+                      <td className="py-1 text-right">{row.value}</td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+        
+        {/* Game instructions */}
+        <div className="mt-8 rounded-xl bg-slate-900/50 border border-slate-800/50 p-4">
+          <h4 className="text-sm font-medium text-slate-300 mb-2">How to Play</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-400">
+            <div className="flex items-start">
+              <span className="text-emerald-400 mr-2">🗻</span>
+              <span>Rock beats Scissors</span>
+            </div>
+            <div className="flex items-start">
+              <span className="text-emerald-400 mr-2">📃</span>
+              <span>Paper beats Rock</span>
+            </div>
+            <div className="flex items-start">
+              <span className="text-emerald-400 mr-2">⚔️</span>
+              <span>Scissors beats Paper</span>
+            </div>
+            <div className="flex items-start">
+              <span className="text-emerald-400 mr-2">🏆</span>
+              <span>Win more rounds to win the match</span>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 // src/pages/SnakePage.jsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { initSnake } from "../games/snake";
 import { useSettings } from "../context/SettingsContext.jsx";
 
@@ -11,12 +11,28 @@ export default function SnakePage() {
     settings.difficulty === "easy" ? 160 :
     settings.difficulty === "hard" ? 80 : 120;
 
+  const [scores, setScores] = useState([]);
+
+  const loadLeaderboard = useCallback(() => {
+    fetch("http://localhost:5000/api/scores/leaderboard?game=snake&limit=10")
+      .then((res) => res.json())
+      .then((rows) => setScores(rows))
+      .catch((err) =>
+        console.error("Error loading snake leaderboard (React):", err)
+      );
+  }, []);
+
+  // initial load of leaderboard
+  useEffect(() => {
+    loadLeaderboard();
+  }, [loadLeaderboard]);
+
   useEffect(() => {
     if (typeof initSnake === "function") {
-      // pass tickDelay so the game loop can use it
-      initSnake({ tickDelay });
+      // pass tickDelay and callback to refresh scores after save
+      initSnake({ tickDelay, onScoreSaved: loadLeaderboard });
     }
-  }, [tickDelay]);
+  }, [tickDelay, loadLeaderboard]);
 
   return (
     <main className="min-h-[calc(100vh-80px)] bg-gradient-to-b from-slate-950 via-slate-900 to-black text-slate-100">
@@ -80,7 +96,14 @@ export default function SnakePage() {
                     <th className="py-2 text-right">Score</th>
                   </tr>
                 </thead>
-                <tbody>{/* rows filled by JS */}</tbody>
+                <tbody>
+                  {scores.map((row, index) => (
+                    <tr key={row._id || index}>
+                      <td>{index + 1}. {row.username}</td>
+                      <td className="py-1 text-right">{row.value}</td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
             </div>
           </div>
