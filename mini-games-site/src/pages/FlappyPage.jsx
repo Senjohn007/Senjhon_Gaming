@@ -23,16 +23,219 @@ export default function FlappyPage() {
     // ensure window.getPlayerInfo exists
     initUsernameUI();
 
+    // Animated background CSS for Flappy Bird theme
     const styleId = "flappy-animations";
     if (!document.getElementById(styleId)) {
       const style = document.createElement("style");
       style.id = styleId;
       style.textContent = `
-        /* all your animation CSS exactly as before, unchanged */
-        @keyframes float { 0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-20px) rotate(5deg);} }
-        /* ... keep the rest of your CSS here ... */
-        .animated-bg { position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;overflow:hidden;
-          background:linear-gradient(-45deg,#0c4a6e,#075985,#0c4a6e,#0369a1);background-size:400% 400%;animation:gradientShift 15s ease infinite;}
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        @keyframes floatReverse {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-15px) rotate(-5deg); }
+        }
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes cloudMove {
+          0% { transform: translateX(-100px); }
+          100% { transform: translateX(calc(100vw + 100px)); }
+        }
+        @keyframes birdFly {
+          0% { transform: translateX(-50px) translateY(0); }
+          25% { transform: translateX(25vw) translateY(-10px); }
+          50% { transform: translateX(50vw) translateY(5px); }
+          75% { transform: translateX(75vw) translateY(-5px); }
+          100% { transform: translateX(calc(100vw + 50px)) translateY(0); }
+        }
+        @keyframes pipeMove {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-100vw); }
+        }
+        @keyframes featherFall {
+          0% { transform: translateY(-10px) rotate(0deg); opacity: 0; }
+          10% { opacity: 0.7; }
+          90% { opacity: 0.7; }
+          100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        @keyframes starTwinkle {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.8; }
+        }
+        @keyframes sunPulse {
+          0%, 100% { transform: scale(1); opacity: 0.8; }
+          50% { transform: scale(1.05); opacity: 1; }
+        }
+        @keyframes windBlow {
+          0% { transform: translateX(-100px); opacity: 0; }
+          10% { opacity: 0.5; }
+          90% { opacity: 0.5; }
+          100% { transform: translateX(100vw); opacity: 0; }
+        }
+        @keyframes scoreFloat {
+          0% { transform: translateY(0) scale(0.8); opacity: 0; }
+          20% { opacity: 1; }
+          80% { opacity: 1; }
+          100% { transform: translateY(-100px) scale(1.2); opacity: 0; }
+        }
+        .animated-bg {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: -1;
+          overflow: hidden;
+          background: linear-gradient(-45deg, #0c4a6e, #075985, #0c4a6e, #0369a1);
+          background-size: 400% 400%;
+          animation: gradientShift 15s ease infinite;
+        }
+        .ground {
+          position: absolute;
+          bottom: 0;
+          width: 100%;
+          height: 60px;
+          background: linear-gradient(to top, #065f46, #047857, #10b981);
+          border-top: 3px solid #065f46;
+        }
+        .star {
+          position: absolute;
+          width: 2px;
+          height: 2px;
+          background-color: white;
+          border-radius: 50%;
+          animation: starTwinkle 3s ease-in-out infinite;
+        }
+        .sun {
+          position: absolute;
+          width: 80px;
+          height: 80px;
+          background: radial-gradient(circle, #fbbf24, #f59e0b);
+          border-radius: 50%;
+          box-shadow: 0 0 40px rgba(251, 191, 36, 0.5);
+          animation: sunPulse 8s ease-in-out infinite;
+        }
+        .cloud {
+          position: absolute;
+          background-color: rgba(255, 255, 255, 0.8);
+          border-radius: 100px;
+          opacity: 0.7;
+          animation: cloudMove linear infinite;
+        }
+        .cloud::before,
+        .cloud::after {
+          content: '';
+          position: absolute;
+          background-color: rgba(255, 255, 255, 0.8);
+          border-radius: 100px;
+        }
+        .cloud::before {
+          width: 50px;
+          height: 50px;
+          top: -25px;
+          left: 10px;
+        }
+        .cloud::after {
+          width: 60px;
+          height: 40px;
+          top: -15px;
+          right: 10px;
+        }
+        .bird {
+          position: absolute;
+          width: 30px;
+          height: 25px;
+          background-color: #fbbf24;
+          border-radius: 50% 50% 20% 20%;
+          animation: birdFly linear infinite;
+        }
+        .bird-eye {
+          position: absolute;
+          width: 6px;
+          height: 6px;
+          background-color: white;
+          border-radius: 50%;
+          top: 5px;
+          right: 8px;
+        }
+        .bird-eye::after {
+          content: '';
+          position: absolute;
+          width: 3px;
+          height: 3px;
+          background-color: black;
+          border-radius: 50%;
+          top: 1px;
+          right: 1px;
+        }
+        .bird-beak {
+          position: absolute;
+          width: 0;
+          height: 0;
+          border-left: 8px solid #f97316;
+          border-top: 4px solid transparent;
+          border-bottom: 4px solid transparent;
+          right: -6px;
+          top: 8px;
+        }
+        .pipe {
+          position: absolute;
+          width: 60px;
+          background: linear-gradient(to right, #16a34a, #22c55e);
+          border: 2px solid #15803d;
+          animation: pipeMove linear infinite;
+        }
+        .pipe::before,
+        .pipe::after {
+          content: '';
+          position: absolute;
+          width: 80px;
+          height: 30px;
+          background: linear-gradient(to right, #16a34a, #22c55e);
+          border: 2px solid #15803d;
+          left: -12px;
+        }
+        .pipe-top::before {
+          top: -30px;
+          border-radius: 5px 5px 0 0;
+        }
+        .pipe-bottom::after {
+          bottom: -30px;
+          border-radius: 0 0 5px 5px;
+        }
+        .feather {
+          position: absolute;
+          width: 10px;
+          height: 5px;
+          background-color: rgba(251, 191, 36, 0.7);
+          border-radius: 50% 50% 50% 0;
+          transform-origin: bottom right;
+          animation: featherFall linear infinite;
+        }
+        .wind-line {
+          position: absolute;
+          height: 2px;
+          background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.4), transparent);
+          animation: windBlow linear infinite;
+        }
+        .score-indicator {
+          position: absolute;
+          color: #fbbf24;
+          font-weight: bold;
+          font-size: 18px;
+          text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+          animation: scoreFloat 3s ease-in-out infinite;
+        }
+        .sky-zone {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(40px);
+        }
       `;
       document.head.appendChild(style);
     }
@@ -55,7 +258,7 @@ export default function FlappyPage() {
 
   return (
     <main className="min-h-[calc(100vh-80px)] relative overflow-hidden">
-      {/* Animated Background (same JSX as before) */}
+      {/* Animated Background */}
       <div className="animated-bg">
         <div className="ground"></div>
 
