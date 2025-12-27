@@ -1,10 +1,29 @@
 // src/pages/BattleshipPage.jsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { initBattleship } from "../games/battleship";
+import { initUsernameUI } from "../games/username"; // ensure window.getPlayerInfo exists
 
 export default function BattleshipPage() {
+  const [scores, setScores] = useState([]);
+
+  const loadLeaderboard = useCallback(() => {
+    fetch(
+      "http://localhost:5000/api/scores/leaderboard?game=battleship&limit=10"
+    )
+      .then((res) => res.json())
+      .then((rows) => setScores(rows))
+      .catch((err) =>
+        console.error("Error loading battleship leaderboard (React):", err)
+      );
+  }, []);
+
   useEffect(() => {
-    // Add custom styles for animations
+    let isMounted = true;
+
+    // make sure username UI registers window.getPlayerInfo
+    initUsernameUI();
+
+    // animated background CSS
     const styleId = "battleship-animations";
     if (!document.getElementById(styleId)) {
       const style = document.createElement("style");
@@ -14,36 +33,30 @@ export default function BattleshipPage() {
           0%, 100% { transform: translateY(0) rotate(0deg); }
           50% { transform: translateY(-20px) rotate(5deg); }
         }
-        
         @keyframes floatReverse {
           0%, 100% { transform: translateY(0) rotate(0deg); }
           50% { transform: translateY(-15px) rotate(-5deg); }
         }
-        
         @keyframes gradientShift {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
-        
         @keyframes waterWave {
           0% { transform: translateY(0) scaleY(1); }
           50% { transform: translateY(-10px) scaleY(0.95); }
           100% { transform: translateY(0) scaleY(1); }
         }
-        
         @keyframes radarSweep {
           0% { transform: rotate(0deg); opacity: 1; }
           70% { opacity: 1; }
           100% { transform: rotate(360deg); opacity: 0; }
         }
-        
         @keyframes bubbleFloat {
           0% { transform: translateY(0) scale(1); opacity: 0.7; }
           50% { transform: translateY(-30px) scale(1.1); opacity: 0.4; }
           100% { transform: translateY(-60px) scale(0.8); opacity: 0; }
         }
-        
         @keyframes shipMove {
           0% { transform: translateX(-100px) translateY(0); }
           25% { transform: translateX(0) translateY(-5px); }
@@ -51,13 +64,11 @@ export default function BattleshipPage() {
           75% { transform: translateX(0) translateY(-3px); }
           100% { transform: translateX(-100px) translateY(0); }
         }
-        
         @keyframes explosion {
           0% { transform: scale(0); opacity: 1; }
           50% { transform: scale(1); opacity: 0.5; }
           100% { transform: scale(1.5); opacity: 0; }
         }
-        
         .animated-bg {
           position: fixed;
           top: 0;
@@ -66,54 +77,39 @@ export default function BattleshipPage() {
           height: 100%;
           z-index: -1;
           overflow: hidden;
-          background: linear-gradient(-45deg, #0f172a, #0c4a6e, #0f172a, #083344);
+          background: linear-gradient(-45deg,#0f172a,#0c4a6e,#0f172a,#083344);
           background-size: 400% 400%;
           animation: gradientShift 15s ease infinite;
         }
-        
         .water-wave {
           position: absolute;
           bottom: 0;
           width: 100%;
           height: 80px;
-          background: linear-gradient(to top, rgba(6, 95, 212, 0.1), transparent);
+          background: linear-gradient(to top,rgba(6,95,212,0.1),transparent);
           border-radius: 50% 50% 0 0;
           transform-origin: center bottom;
           animation: waterWave 8s ease-in-out infinite;
         }
-        
-        .water-wave:nth-child(odd) {
-          animation-delay: 0.5s;
-          animation-duration: 7s;
-        }
-        
-        .water-wave:nth-child(even) {
-          animation-delay: 1s;
-          animation-duration: 9s;
-        }
-        
         .bubble {
           position: absolute;
-          background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.1) 70%);
+          background: radial-gradient(circle,rgba(255,255,255,0.8) 0%,rgba(255,255,255,0.1) 70%);
           border-radius: 50%;
           animation: bubbleFloat 10s ease-in-out infinite;
         }
-        
         .ship-silhouette {
           position: absolute;
           opacity: 0.15;
           animation: shipMove 20s linear infinite;
         }
-        
         .ship-silhouette::before {
           content: '';
           position: absolute;
           width: 60px;
           height: 20px;
-          background: linear-gradient(to right, #334155, #475569);
+          background: linear-gradient(to right,#334155,#475569);
           border-radius: 10px 10px 0 0;
         }
-        
         .ship-silhouette::after {
           content: '';
           position: absolute;
@@ -123,31 +119,27 @@ export default function BattleshipPage() {
           bottom: 10px;
           left: 15px;
         }
-        
         .explosion-particle {
           position: absolute;
           width: 10px;
           height: 10px;
-          background: radial-gradient(circle, rgba(251, 146, 60, 0.8) 0%, rgba(251, 146, 60, 0) 70%);
+          background: radial-gradient(circle,rgba(251,146,60,0.8) 0%,rgba(251,146,60,0) 70%);
           border-radius: 50%;
           animation: explosion 8s ease-in-out infinite;
         }
-        
         .radar-zone {
           position: absolute;
           border-radius: 50%;
-          border: 1px solid rgba(34, 211, 238, 0.2);
+          border: 1px solid rgba(34,211,238,0.2);
         }
-        
         .radar-sweep {
           position: absolute;
           width: 100%;
           height: 100%;
           border-radius: 50%;
-          background: conic-gradient(from 0deg, transparent 0deg, rgba(34, 211, 238, 0.3) 30deg, transparent 60deg);
+          background: conic-gradient(from 0deg,transparent 0deg,rgba(34,211,238,0.3) 30deg,transparent 60deg);
           animation: radarSweep 4s linear infinite;
         }
-        
         .compass-icon {
           position: absolute;
           width: 40px;
@@ -155,38 +147,35 @@ export default function BattleshipPage() {
           opacity: 0.2;
           animation: floatReverse 12s ease-in-out infinite;
         }
-        
+        .compass-icon::before,
+        .compass-icon::after { position:absolute; content:''; background:rgba(34,211,238,0.4); }
         .compass-icon::before {
-          content: '';
-          position: absolute;
-          width: 2px;
-          height: 30px;
-          background: rgba(34, 211, 238, 0.4);
-          top: 5px;
-          left: 19px;
+          width:2px;height:30px;top:5px;left:19px;
         }
-        
         .compass-icon::after {
-          content: '';
-          position: absolute;
-          width: 30px;
-          height: 2px;
-          background: rgba(34, 211, 238, 0.4);
-          top: 19px;
-          left: 5px;
+          width:30px;height:2px;top:19px;left:5px;
         }
       `;
       document.head.appendChild(style);
     }
 
-    initBattleship?.();
-  }, []);
+    loadLeaderboard();
+    initBattleship?.({
+      onScoreSaved: () => {
+        if (!isMounted) return;
+        loadLeaderboard();
+      },
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [loadLeaderboard]);
 
   return (
     <main className="min-h-[calc(100vh-80px)] relative overflow-hidden">
       {/* Animated Background */}
       <div className="animated-bg">
-        {/* Water Waves at the bottom */}
         {[...Array(5)].map((_, i) => (
           <div
             key={`wave-${i}`}
@@ -198,8 +187,7 @@ export default function BattleshipPage() {
             }}
           />
         ))}
-        
-        {/* Bubbles */}
+
         {[...Array(20)].map((_, i) => (
           <div
             key={`bubble-${i}`}
@@ -214,8 +202,7 @@ export default function BattleshipPage() {
             }}
           />
         ))}
-        
-        {/* Ship Silhouettes */}
+
         {[...Array(3)].map((_, i) => (
           <div
             key={`ship-${i}`}
@@ -227,8 +214,7 @@ export default function BattleshipPage() {
             }}
           />
         ))}
-        
-        {/* Explosion Particles */}
+
         {[...Array(8)].map((_, i) => (
           <div
             key={`explosion-${i}`}
@@ -241,32 +227,20 @@ export default function BattleshipPage() {
             }}
           />
         ))}
-        
-        {/* Radar Zones */}
-        <div 
+
+        <div
           className="radar-zone"
-          style={{
-            width: '200px',
-            height: '200px',
-            top: '20%',
-            left: '70%',
-          }}
+          style={{ width: "200px", height: "200px", top: "20%", left: "70%" }}
         >
-          <div className="radar-sweep"></div>
+          <div className="radar-sweep" />
         </div>
-        <div 
+        <div
           className="radar-zone"
-          style={{
-            width: '150px',
-            height: '150px',
-            bottom: '25%',
-            left: '15%',
-          }}
+          style={{ width: "150px", height: "150px", bottom: "25%", left: "15%" }}
         >
-          <div className="radar-sweep"></div>
+          <div className="radar-sweep" />
         </div>
-        
-        {/* Compass Icons */}
+
         {[...Array(4)].map((_, i) => (
           <div
             key={`compass-${i}`}
@@ -280,7 +254,7 @@ export default function BattleshipPage() {
           />
         ))}
       </div>
-      
+
       {/* Main content */}
       <div className="relative max-w-5xl mx-auto px-4 py-10">
         <div className="mb-6">
@@ -288,24 +262,20 @@ export default function BattleshipPage() {
             Battleship
           </h2>
           <p className="mt-2 text-sm md:text-base text-slate-300">
-            Sink the CPU&apos;s ships before it sinks yours. Click the CPU
-            grid to fire.
+            Sink the CPU&apos;s ships before it sinks yours. Click the CPU grid to fire.
           </p>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)] items-start">
-          {/* game panel */}
+          {/* Game panel */}
           <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_20px_50px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5 relative overflow-hidden">
-            {/* Subtle cyan line at top */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
 
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
                 Strategy
               </span>
-              <span className="text-xs text-slate-400">
-                6×6 · 2 ships
-              </span>
+              <span className="text-xs text-slate-400">6×6 · 2 ships</span>
             </div>
 
             <div id="game-root" className="space-y-4">
@@ -314,17 +284,14 @@ export default function BattleshipPage() {
                   <div className="text-xs text-slate-400 mb-1 text-center">
                     Your Fleet
                   </div>
-                  <div
-                    id="bship-player-grid"
-                    className="inline-grid"
-                  ></div>
+                  <div id="bship-player-grid" className="inline-grid" />
                 </div>
 
                 <div>
                   <div className="text-xs text-slate-400 mb-1 text-center">
                     CPU Fleet
                   </div>
-                  <div id="bship-cpu-grid" className="inline-grid"></div>
+                  <div id="bship-cpu-grid" className="inline-grid" />
                 </div>
               </div>
 
@@ -346,9 +313,8 @@ export default function BattleshipPage() {
             </div>
           </div>
 
-          {/* leaderboard */}
+          {/* Leaderboard (React owns rows) */}
           <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_18px_40px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5 relative overflow-hidden">
-            {/* Subtle cyan line at top */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
 
             <h3 className="text-lg font-semibold text-slate-50 mb-2">
@@ -369,13 +335,20 @@ export default function BattleshipPage() {
                     <th className="py-2 text-right">Score</th>
                   </tr>
                 </thead>
-                <tbody>{/* rows filled by JS */}</tbody>
+                <tbody>
+                  {scores.map((row, index) => (
+                    <tr key={row._id || index}>
+                      <td>{index + 1}. {row.username}</td>
+                      <td className="py-1 text-right">{row.value}</td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
             </div>
           </div>
         </div>
 
-        {/* Game instructions */}
+        {/* Instructions */}
         <div className="mt-8 rounded-xl bg-slate-900/50 border border-slate-800/50 p-4">
           <h4 className="text-sm font-medium text-slate-300 mb-2">How to Play</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-400">

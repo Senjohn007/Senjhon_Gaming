@@ -340,7 +340,7 @@ export default function ProfilePage() {
                       }`}
                     />
                     <span className="text-xs text-slate-300">
-                      {profile.online ? "Online" : "Offline"}
+                      {profile.online ? "Online" : "Online"}
                     </span>
                   </div>
 

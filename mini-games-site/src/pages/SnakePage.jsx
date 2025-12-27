@@ -33,7 +33,7 @@ export default function SnakePage() {
       initSnake({ tickDelay, onScoreSaved: loadLeaderboard });
     }
   }, [tickDelay, loadLeaderboard]);
-  
+
   useEffect(() => {
     // Add custom styles for animations
     const styleId = "snake-animations";
@@ -193,7 +193,7 @@ export default function SnakePage() {
       <div className="animated-bg">
         {/* Grid Pattern */}
         <div className="grid-pattern"></div>
-        
+
         {/* Snake Segments */}
         {[...Array(8)].map((_, i) => (
           <div
@@ -210,7 +210,7 @@ export default function SnakePage() {
             }}
           />
         ))}
-        
+
         {/* Snake Skin Patterns */}
         {[...Array(5)].map((_, i) => (
           <div
@@ -225,15 +225,15 @@ export default function SnakePage() {
             }}
           />
         ))}
-        
+
         {/* Food Items */}
         {[...Array(15)].map((_, i) => {
           const foodTypes = [
-            { bg: 'linear-gradient(to bottom, #ef4444, #dc2626)', emoji: '🍎' },
-            { bg: 'linear-gradient(to bottom, #f59e0b, #d97706)', emoji: '🍊' },
-            { bg: 'linear-gradient(to bottom, #eab308, #ca8a04)', emoji: '🍋' },
-            { bg: 'linear-gradient(to bottom, #a855f7, #9333ea)', emoji: '🍇' },
-            { bg: 'linear-gradient(to bottom, #ec4899, #db2777)', emoji: '🍓' }
+            { bg: "linear-gradient(to bottom, #ef4444, #dc2626)", emoji: "🍎" },
+            { bg: "linear-gradient(to bottom, #f59e0b, #d97706)", emoji: "🍊" },
+            { bg: "linear-gradient(to bottom, #eab308, #ca8a04)", emoji: "🍋" },
+            { bg: "linear-gradient(to bottom, #a855f7, #9333ea)", emoji: "🍇" },
+            { bg: "linear-gradient(to bottom, #ec4899, #db2777)", emoji: "🍓" },
           ];
           const food = foodTypes[Math.floor(Math.random() * foodTypes.length)];
           return (
@@ -251,7 +251,7 @@ export default function SnakePage() {
             />
           );
         })}
-        
+
         {/* Grass Blades */}
         {[...Array(30)].map((_, i) => (
           <div
@@ -265,7 +265,7 @@ export default function SnakePage() {
             }}
           />
         ))}
-        
+
         {/* Leaves */}
         {[...Array(10)].map((_, i) => (
           <div
@@ -280,7 +280,7 @@ export default function SnakePage() {
             }}
           />
         ))}
-        
+
         {/* Snake Eggs */}
         {[...Array(6)].map((_, i) => (
           <div
@@ -294,44 +294,44 @@ export default function SnakePage() {
             }}
           />
         ))}
-        
+
         {/* Nature Zones */}
-        <div 
+        <div
           className="nature-zone"
           style={{
-            width: '300px',
-            height: '300px',
-            top: '10%',
-            left: '10%',
-            backgroundColor: 'rgba(34, 197, 94, 0.05)',
-            animation: 'float 15s ease-in-out infinite',
+            width: "300px",
+            height: "300px",
+            top: "10%",
+            left: "10%",
+            backgroundColor: "rgba(34, 197, 94, 0.05)",
+            animation: "float 15s ease-in-out infinite",
           }}
         />
-        <div 
+        <div
           className="nature-zone"
           style={{
-            width: '250px',
-            height: '250px',
-            bottom: '15%',
-            right: '15%',
-            backgroundColor: 'rgba(16, 185, 129, 0.05)',
-            animation: 'floatReverse 12s ease-in-out infinite',
+            width: "250px",
+            height: "250px",
+            bottom: "15%",
+            right: "15%",
+            backgroundColor: "rgba(16, 185, 129, 0.05)",
+            animation: "floatReverse 12s ease-in-out infinite",
           }}
         />
-        <div 
+        <div
           className="nature-zone"
           style={{
-            width: '200px',
-            height: '200px',
-            top: '50%',
-            left: '60%',
-            backgroundColor: 'rgba(132, 204, 22, 0.05)',
-            animation: 'float 18s ease-in-out infinite',
-            animationDelay: '3s',
+            width: "200px",
+            height: "200px",
+            top: "50%",
+            left: "60%",
+            backgroundColor: "rgba(132, 204, 22, 0.05)",
+            animation: "float 18s ease-in-out infinite",
+            animationDelay: "3s",
           }}
         />
       </div>
-      
+
       {/* Main content */}
       <div className="relative max-w-4xl mx-auto px-4 py-10">
         {/* title + description */}
@@ -349,7 +349,7 @@ export default function SnakePage() {
           <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_20px_50px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5 relative overflow-hidden">
             {/* Nature effect at top */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-50"></div>
-            
+
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
                 Classic
@@ -380,7 +380,7 @@ export default function SnakePage() {
           <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_18px_40px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5 relative overflow-hidden">
             {/* Nature effect at top */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-50"></div>
-            
+
             <h3 className="text-lg font-semibold text-slate-50 mb-2">
               Top Snake Scores
             </h3>
@@ -411,7 +411,7 @@ export default function SnakePage() {
             </div>
           </div>
         </div>
-        
+
         {/* Game instructions */}
         <div className="mt-8 rounded-xl bg-slate-900/50 border border-slate-800/50 p-4">
           <h4 className="text-sm font-medium text-slate-300 mb-2">How to Play</h4>

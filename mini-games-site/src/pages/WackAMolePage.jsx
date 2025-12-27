@@ -1,10 +1,28 @@
 // src/pages/WhackAMolePage.jsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { initWhackAMole } from "../games/whack-a-mole";
+import { initUsernameUI } from "../games/username";
 
 export default function WackAMolePage() {
+  const [scores, setScores] = useState([]);
+
+  const loadLeaderboard = useCallback(() => {
+    fetch(
+      "http://localhost:5000/api/scores/leaderboard?game=whack-a-mole&limit=10"
+    )
+      .then((res) => res.json())
+      .then((rows) => setScores(rows))
+      .catch((err) =>
+        console.error("Error loading Whack-a-Mole leaderboard (React):", err)
+      );
+  }, []);
+
   useEffect(() => {
-    // Add custom styles for animations
+    let isMounted = true;
+
+    initUsernameUI(); 
+
+    // animations CSS
     const styleId = "whack-a-mole-animations";
     if (!document.getElementById(styleId)) {
       const style = document.createElement("style");
@@ -14,37 +32,26 @@ export default function WackAMolePage() {
           0%, 100% { transform: translateY(0) rotate(0deg); }
           50% { transform: translateY(-20px) rotate(5deg); }
         }
-        
         @keyframes floatReverse {
           0%, 100% { transform: translateY(0) rotate(0deg); }
           50% { transform: translateY(-15px) rotate(-5deg); }
         }
-        
         @keyframes gradientShift {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
-        
         @keyframes molePop {
           0% { transform: translateY(100%); opacity: 0; }
           20% { opacity: 1; }
           80% { opacity: 1; }
           100% { transform: translateY(-100%); opacity: 0; }
         }
-        
-        @keyframes hammerSwing {
-          0% { transform: rotate(0deg); }
-          50% { transform: rotate(-30deg); }
-          100% { transform: rotate(0deg); }
-        }
-        
         @keyframes grassWave {
           0% { transform: translateX(0) scaleY(1); }
           50% { transform: translateX(5px) scaleY(0.95); }
           100% { transform: translateX(0) scaleY(1); }
         }
-        
         .animated-bg {
           position: fixed;
           top: 0;
@@ -53,97 +60,55 @@ export default function WackAMolePage() {
           height: 100%;
           z-index: -1;
           overflow: hidden;
-          background: linear-gradient(-45deg, #0f172a, #1e293b, #0f172a, #1e1b4b);
+          background: linear-gradient(-45deg,#0f172a,#1e293b,#0f172a,#1e1b4b);
           background-size: 400% 400%;
           animation: gradientShift 15s ease infinite;
         }
-        
         .grass-blade {
           position: absolute;
           bottom: 0;
           width: 3px;
           height: 30px;
-          background: linear-gradient(to top, #14532d, #22c55e);
+          background: linear-gradient(to top,#14532d,#22c55e);
           border-radius: 100% 0 0 0;
           transform-origin: bottom center;
           animation: grassWave 3s ease-in-out infinite;
         }
-        
-        .grass-blade:nth-child(odd) {
-          animation-delay: 0.5s;
-          animation-duration: 3.5s;
-        }
-        
-        .grass-blade:nth-child(even) {
-          animation-delay: 1s;
-          animation-duration: 2.5s;
-        }
-        
         .mole-silhouette {
           position: absolute;
           width: 40px;
           height: 40px;
-          background: rgba(139, 69, 19, 0.15);
+          background: rgba(139,69,19,0.15);
           border-radius: 50% 50% 40% 40%;
           animation: molePop 8s ease-in-out infinite;
         }
-        
-        .hammer-icon {
-          position: absolute;
-          width: 30px;
-          height: 30px;
-          opacity: 0.2;
-          animation: float 10s ease-in-out infinite;
-        }
-        
-        .hammer-icon::before {
-          content: '';
-          position: absolute;
-          width: 8px;
-          height: 20px;
-          background: rgba(156, 163, 175, 0.3);
-          top: 5px;
-          left: 11px;
-          border-radius: 2px;
-        }
-        
-        .hammer-icon::after {
-          content: '';
-          position: absolute;
-          width: 20px;
-          height: 15px;
-          background: rgba(156, 163, 175, 0.3);
-          border-radius: 3px;
-          top: 0;
-          left: 5px;
-        }
-        
-        .dirt-particle {
-          position: absolute;
-          width: 5px;
-          height: 5px;
-          background: rgba(120, 53, 15, 0.3);
-          border-radius: 50%;
-          animation: float 7s ease-in-out infinite;
-        }
-        
-        .garden-zone {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(40px);
-        }
+        .hammer-icon,
+        .dirt-particle,
+        .garden-zone { position:absolute; }
       `;
       document.head.appendChild(style);
     }
 
-    initWhackAMole?.();
-  }, []);
+    // initial leaderboard
+    loadLeaderboard();
+
+    // init game; callback guarded with isMounted
+    initWhackAMole?.({
+      onScoreSaved: () => {
+        if (!isMounted) return;
+        loadLeaderboard();
+      },
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [loadLeaderboard]);
 
   return (
     <main className="min-h-[calc(100vh-80px)] relative overflow-hidden">
       {/* Animated Background */}
       <div className="animated-bg">
-        {/* Grass Blades at the bottom */}
         {[...Array(30)].map((_, i) => (
           <div
             key={`grass-${i}`}
@@ -155,8 +120,7 @@ export default function WackAMolePage() {
             }}
           />
         ))}
-        
-        {/* Mole Silhouettes */}
+
         {[...Array(5)].map((_, i) => (
           <div
             key={`mole-${i}`}
@@ -169,8 +133,7 @@ export default function WackAMolePage() {
             }}
           />
         ))}
-        
-        {/* Hammer Icons */}
+
         {[...Array(4)].map((_, i) => (
           <div
             key={`hammer-${i}`}
@@ -183,8 +146,7 @@ export default function WackAMolePage() {
             }}
           />
         ))}
-        
-        {/* Dirt Particles */}
+
         {[...Array(15)].map((_, i) => (
           <div
             key={`dirt-${i}`}
@@ -197,47 +159,45 @@ export default function WackAMolePage() {
             }}
           />
         ))}
-        
-        {/* Garden Zones */}
-        <div 
+
+        <div
           className="garden-zone"
           style={{
-            width: '300px',
-            height: '300px',
-            top: '10%',
-            left: '10%',
-            backgroundColor: 'rgba(34, 197, 94, 0.05)',
-            animation: 'float 15s ease-in-out infinite',
+            width: "300px",
+            height: "300px",
+            top: "10%",
+            left: "10%",
+            backgroundColor: "rgba(34,197,94,0.05)",
+            animation: "float 15s ease-in-out infinite",
           }}
         />
-        <div 
+        <div
           className="garden-zone"
           style={{
-            width: '250px',
-            height: '250px',
-            bottom: '15%',
-            right: '15%',
-            backgroundColor: 'rgba(251, 191, 36, 0.05)',
-            animation: 'floatReverse 12s ease-in-out infinite',
+            width: "250px",
+            height: "250px",
+            bottom: "15%",
+            right: "15%",
+            backgroundColor: "rgba(251,191,36,0.05)",
+            animation: "floatReverse 12s ease-in-out infinite",
           }}
         />
-        <div 
+        <div
           className="garden-zone"
           style={{
-            width: '200px',
-            height: '200px',
-            top: '50%',
-            left: '60%',
-            backgroundColor: 'rgba(163, 230, 53, 0.05)',
-            animation: 'float 18s ease-in-out infinite',
-            animationDelay: '3s',
+            width: "200px",
+            height: "200px",
+            top: "50%",
+            left: "60%",
+            backgroundColor: "rgba(163,230,53,0.05)",
+            animation: "float 18s ease-in-out infinite",
+            animationDelay: "3s",
           }}
         />
       </div>
-      
+
       {/* Main content */}
       <div className="relative max-w-4xl mx-auto px-4 py-10">
-        {/* title + description */}
         <div className="mb-6">
           <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-amber-300 drop-shadow-[0_0_24px_rgba(251,191,36,0.6)]">
             Whack-a-Mole
@@ -250,25 +210,20 @@ export default function WackAMolePage() {
         <div className="grid gap-8 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] items-start">
           {/* game panel */}
           <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_20px_50px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5 relative overflow-hidden">
-            {/* Garden effect at top */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent opacity-50"></div>
-            
+
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
                 Reflex
               </span>
-              <span className="text-xs text-slate-400">
-                Timed · Click fast
-              </span>
+              <span className="text-xs text-slate-400">Timed · Click fast</span>
             </div>
 
             <div id="game-root" className="flex flex-col items-center">
               <div
                 id="mole-grid"
                 className="grid grid-cols-3 gap-3 justify-center my-4"
-              >
-                {/* holes created by JS; JS can add a base hole class for visuals */}
-              </div>
+              />
 
               <div
                 className="feedback text-sm text-slate-200 text-center"
@@ -293,11 +248,10 @@ export default function WackAMolePage() {
             </div>
           </div>
 
-          {/* leaderboard */}
+          {/* leaderboard (React only) */}
           <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_18px_40px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5 relative overflow-hidden">
-            {/* Garden effect at top */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent opacity-50"></div>
-            
+
             <h3 className="text-lg font-semibold text-slate-50 mb-2">
               Top Whack-a-Mole Scores
             </h3>
@@ -316,13 +270,20 @@ export default function WackAMolePage() {
                     <th className="py-2 text-right">Score</th>
                   </tr>
                 </thead>
-                <tbody>{/* rows filled by JS */}</tbody>
+                <tbody>
+                  {scores.map((row, index) => (
+                    <tr key={row._id || index}>
+                      <td>{index + 1}. {row.username}</td>
+                      <td className="py-1 text-right">{row.value}</td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
             </div>
           </div>
         </div>
-        
-        {/* Game instructions */}
+
+        {/* instructions */}
         <div className="mt-8 rounded-xl bg-slate-900/50 border border-slate-800/50 p-4">
           <h4 className="text-sm font-medium text-slate-300 mb-2">How to Play</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-400">

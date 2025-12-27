@@ -22,7 +22,7 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
 
   // Add custom styles
   const snakeStyles = `
-    <style id="snake-styles">
+    <style id="snake-styles-style">
       #snake-status {
         background: linear-gradient(to right, #1e293b, #334155);
         color: white;
@@ -36,17 +36,18 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
       
       #snake-canvas {
         border-radius: 8px;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                    0 4px 6px -2px rgba(0, 0, 0, 0.05);
       }
     </style>
   `;
-  
+
   // Add styles to head if not already added
-  if (!document.getElementById('snake-styles')) {
-    const styleElement = document.createElement('div');
-    styleElement.id = 'snake-styles';
-    styleElement.innerHTML = snakeStyles;
-    document.head.appendChild(styleElement);
+  if (!document.getElementById("snake-styles-style")) {
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = snakeStyles;
+    const styleTag = wrapper.firstElementChild;
+    document.head.appendChild(styleTag);
   }
 
   function randomFood() {
@@ -65,25 +66,27 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         life: 20,
-        color: `hsl(${20 + Math.random() * 40}, 100%, ${50 + Math.random() * 30}%)`
+        color: `hsl(${20 + Math.random() * 40}, 100%, ${
+          50 + Math.random() * 30
+        }%)`,
       });
     }
   }
 
   // Update particles
   function updateParticles() {
-    particles.forEach(p => {
+    particles.forEach((p) => {
       p.x += p.vx;
       p.y += p.vy;
       p.vy += 0.1;
       p.life--;
     });
-    particles = particles.filter(p => p.life > 0);
+    particles = particles.filter((p) => p.life > 0);
   }
 
   // Draw particles
   function drawParticles() {
-    particles.forEach(p => {
+    particles.forEach((p) => {
       ctx.globalAlpha = p.life / 20;
       ctx.fillStyle = p.color;
       ctx.beginPath();
@@ -93,29 +96,7 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
     ctx.globalAlpha = 1;
   }
 
-  // keep this for initial page load (first time)
-  function loadLeaderboard() {
-    fetch("http://localhost:5000/api/scores/leaderboard?game=snake&limit=10")
-      .then((res) => res.json())
-      .then((rows) => {
-        const tbody = document.querySelector("#snake-leaderboard tbody");
-        if (!tbody) return;
-        tbody.innerHTML = "";
-        rows.forEach((row, index) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${index + 1}. ${row.username}</td>
-            <td style="text-align:right;">${row.value}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      })
-      .catch((err) =>
-        console.error("Error loading snake leaderboard:", err)
-      );
-  }
-
-  // uses shared submitScore pattern with auth + gameKey
+  // submit score only; React handles leaderboard rendering
   function submitScore(scoreValue) {
     if (typeof window.getPlayerInfo !== "function") {
       console.error("getPlayerInfo is not available");
@@ -145,9 +126,6 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
         // let React (or outside) decide how to reload
         if (typeof onScoreSaved === "function") {
           onScoreSaved();
-        } else {
-          // fallback: keep old behavior if callback not passed
-          loadLeaderboard();
         }
       })
       .catch((err) => {
@@ -228,7 +206,7 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
       ctx.moveTo(i * tileSize, 0);
       ctx.lineTo(i * tileSize, canvas.height);
       ctx.stroke();
-      
+
       ctx.beginPath();
       ctx.moveTo(0, i * tileSize);
       ctx.lineTo(canvas.width, i * tileSize);
@@ -239,7 +217,7 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
     foodPulse = (foodPulse + 0.05) % (Math.PI * 2);
     const foodSize = tileSize - 4 + Math.sin(foodPulse) * 2;
     const foodOffset = (tileSize - foodSize) / 2;
-    
+
     // Food shadow
     ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
     ctx.beginPath();
@@ -251,7 +229,7 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
       Math.PI * 2
     );
     ctx.fill();
-    
+
     // Food (apple-like)
     const foodGradient = ctx.createRadialGradient(
       food.x * tileSize + tileSize / 2,
@@ -264,7 +242,7 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
     foodGradient.addColorStop(0, "#ef4444");
     foodGradient.addColorStop(0.7, "#dc2626");
     foodGradient.addColorStop(1, "#b91c1c");
-    
+
     ctx.fillStyle = foodGradient;
     ctx.beginPath();
     ctx.arc(
@@ -275,7 +253,7 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
       Math.PI * 2
     );
     ctx.fill();
-    
+
     // Food highlight
     ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
     ctx.beginPath();
@@ -292,7 +270,7 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
     snake.forEach((seg, index) => {
       const size = tileSize - 4;
       const offset = (tileSize - size) / 2;
-      
+
       // Snake shadow
       ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
       ctx.beginPath();
@@ -304,7 +282,7 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
         size / 3
       );
       ctx.fill();
-      
+
       // Snake segment gradient
       const segmentGradient = ctx.createLinearGradient(
         seg.x * tileSize + offset,
@@ -312,7 +290,7 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
         seg.x * tileSize + offset + size,
         seg.y * tileSize + offset + size
       );
-      
+
       // Head is brighter
       if (index === 0) {
         segmentGradient.addColorStop(0, "#60a5fa");
@@ -320,10 +298,16 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
       } else {
         // Body segments get darker towards the tail
         const darkness = 1 - (index / snake.length) * 0.5;
-        segmentGradient.addColorStop(0, `rgba(96, 165, 250, ${darkness})`);
-        segmentGradient.addColorStop(1, `rgba(59, 130, 246, ${darkness})`);
+        segmentGradient.addColorStop(
+          0,
+          `rgba(96, 165, 250, ${darkness})`
+        );
+        segmentGradient.addColorStop(
+          1,
+          `rgba(59, 130, 246, ${darkness})`
+        );
       }
-      
+
       ctx.fillStyle = segmentGradient;
       ctx.beginPath();
       ctx.roundRect(
@@ -334,37 +318,41 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
         size / 3
       );
       ctx.fill();
-      
+
       // Add eyes to the head
       if (index === 0) {
         const eyeSize = 2;
         const eyeOffset = size / 3;
-        
+
         // Determine eye position based on direction
         let leftEyeX, leftEyeY, rightEyeX, rightEyeY;
-        
-        if (direction.x === 1) { // Right
+
+        if (direction.x === 1) {
+          // Right
           leftEyeX = seg.x * tileSize + offset + size - eyeOffset;
           leftEyeY = seg.y * tileSize + offset + eyeOffset;
           rightEyeX = seg.x * tileSize + offset + size - eyeOffset;
           rightEyeY = seg.y * tileSize + offset + size - eyeOffset;
-        } else if (direction.x === -1) { // Left
+        } else if (direction.x === -1) {
+          // Left
           leftEyeX = seg.x * tileSize + offset + eyeOffset;
           leftEyeY = seg.y * tileSize + offset + eyeOffset;
           rightEyeX = seg.x * tileSize + offset + eyeOffset;
           rightEyeY = seg.y * tileSize + offset + size - eyeOffset;
-        } else if (direction.y === 1) { // Down
+        } else if (direction.y === 1) {
+          // Down
           leftEyeX = seg.x * tileSize + offset + eyeOffset;
           leftEyeY = seg.y * tileSize + offset + size - eyeOffset;
           rightEyeX = seg.x * tileSize + offset + size - eyeOffset;
           rightEyeY = seg.y * tileSize + offset + size - eyeOffset;
-        } else { // Up
+        } else {
+          // Up
           leftEyeX = seg.x * tileSize + offset + eyeOffset;
           leftEyeY = seg.y * tileSize + offset + eyeOffset;
           rightEyeX = seg.x * tileSize + offset + size - eyeOffset;
           rightEyeY = seg.y * tileSize + offset + eyeOffset;
         }
-        
+
         // Draw eyes
         ctx.fillStyle = "white";
         ctx.beginPath();
@@ -373,7 +361,7 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
         ctx.beginPath();
         ctx.arc(rightEyeX, rightEyeY, eyeSize, 0, Math.PI * 2);
         ctx.fill();
-        
+
         // Draw pupils
         ctx.fillStyle = "black";
         ctx.beginPath();
@@ -392,7 +380,8 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
   function handleKeyDown(e) {
     if (e.key === "ArrowUp" && direction.y !== 1) direction = { x: 0, y: -1 };
     if (e.key === "ArrowDown" && direction.y !== -1) direction = { x: 0, y: 1 };
-    if (e.key === "ArrowLeft" && direction.x !== 1) direction = { x: -1, y: 0 };
+    if (e.key === "ArrowLeft" && direction.x !== 1)
+      direction = { x: -1, y: 0 };
     if (e.key === "ArrowRight" && direction.x !== -1)
       direction = { x: 1, y: 0 };
 
@@ -410,5 +399,4 @@ export function initSnake({ tickDelay = 120, onScoreSaved } = {}) {
   document.addEventListener("keydown", handleKeyDown);
 
   draw();
-  loadLeaderboard();
 }
