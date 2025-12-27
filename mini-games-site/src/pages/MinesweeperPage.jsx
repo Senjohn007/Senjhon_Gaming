@@ -20,99 +20,475 @@ export default function MinesweeperPage() {
   }, [loadLeaderboard]);
 
   useEffect(() => {
+    // Add custom styles for animations
+    const styleId = "minesweeper-animations";
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement("style");
+      style.id = styleId;
+      style.textContent = `
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        @keyframes floatReverse {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-15px) rotate(-5deg); }
+        }
+        
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes minePulse {
+          0%, 100% { transform: scale(1); opacity: 0.7; }
+          50% { transform: scale(1.1); opacity: 1; }
+        }
+        
+        @keyframes flagWave {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(-5deg); }
+          75% { transform: rotate(5deg); }
+        }
+        
+        @keyframes explosion {
+          0% { transform: scale(0); opacity: 1; }
+          50% { transform: scale(1); opacity: 0.7; }
+          100% { transform: scale(1.5); opacity: 0; }
+        }
+        
+        @keyframes numberPulse {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.8; }
+        }
+        
+        @keyframes gridLine {
+          0% { opacity: 0.05; }
+          50% { opacity: 0.1; }
+        }
+        
+        @keyframes warningBlink {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.8; }
+        }
+        
+        @keyframes radarSweep {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes cautionTape {
+          0% { background-position: 0 0; }
+          100% { background-position: 40px 0; }
+        }
+        
+        .animated-bg {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: -1;
+          overflow: hidden;
+          background: linear-gradient(-45deg, #0f172a, #7c2d12, #0f172a, #451a03);
+          background-size: 400% 400%;
+          animation: gradientShift 15s ease infinite;
+        }
+        
+        .mine {
+          position: absolute;
+          width: 30px;
+          height: 30px;
+          animation: minePulse 5s ease-in-out infinite;
+        }
+        
+        .mine::before {
+          content: '';
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(135deg, #6b7280, #374151);
+          clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+        
+        .mine::after {
+          content: '';
+          position: absolute;
+          width: 4px;
+          height: 4px;
+          background: #ef4444;
+          border-radius: 50%;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        }
+        
+        .flag {
+          position: absolute;
+          width: 20px;
+          height: 30px;
+          animation: flagWave 4s ease-in-out infinite;
+        }
+        
+        .flag::before {
+          content: '';
+          position: absolute;
+          width: 2px;
+          height: 100%;
+          background: #9ca3af;
+          left: 2px;
+        }
+        
+        .flag::after {
+          content: '';
+          position: absolute;
+          width: 15px;
+          height: 10px;
+          background: #ef4444;
+          top: 5px;
+          left: 4px;
+          clip-path: polygon(0 0, 100% 0, 85% 50%, 100% 100%, 0 100%);
+        }
+        
+        .explosion {
+          position: absolute;
+          width: 40px;
+          height: 40px;
+          background: radial-gradient(circle, rgba(239, 68, 68, 0.7) 0%, rgba(239, 68, 68, 0) 70%);
+          border-radius: 50%;
+          animation: explosion 5s ease-in-out infinite;
+        }
+        
+        .number {
+          position: absolute;
+          font-family: monospace;
+          font-weight: bold;
+          color: rgba(255, 255, 255, 0.3);
+          animation: numberPulse 3s ease-in-out infinite;
+        }
+        
+        .grid-cell {
+          position: absolute;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          animation: gridLine 4s ease-in-out infinite;
+        }
+        
+        .warning-sign {
+          position: absolute;
+          width: 30px;
+          height: 30px;
+          background: linear-gradient(135deg, #fbbf24, #f59e0b);
+          clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+          animation: warningBlink 2s ease-in-out infinite;
+        }
+        
+        .warning-sign::after {
+          content: '!';
+          position: absolute;
+          top: 35%;
+          left: 50%;
+          transform: translateX(-50%);
+          font-weight: bold;
+          color: #7c2d12;
+        }
+        
+        .radar {
+          position: absolute;
+          border-radius: 50%;
+          border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .radar::before {
+          content: '';
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          background: conic-gradient(from 0deg, transparent 0deg, rgba(239, 68, 68, 0.3) 30deg, transparent 60deg);
+          animation: radarSweep 4s linear infinite;
+        }
+        
+        .caution-tape {
+          position: absolute;
+          height: 10px;
+          background: repeating-linear-gradient(
+            90deg,
+            #fbbf24 0px,
+            #fbbf24 20px,
+            #000 20px,
+            #000 40px
+          );
+          animation: cautionTape 10s linear infinite;
+        }
+        
+        .binoculars {
+          position: absolute;
+          width: 40px;
+          height: 20px;
+          background: linear-gradient(135deg, #374151, #1f2937);
+          border-radius: 10px;
+          animation: float 10s ease-in-out infinite;
+        }
+        
+        .binoculars::before,
+        .binoculars::after {
+          content: '';
+          position: absolute;
+          width: 15px;
+          height: 15px;
+          background: #111827;
+          border-radius: 50%;
+          top: 2.5px;
+        }
+        
+        .binoculars::before {
+          left: 5px;
+        }
+        
+        .binoculars::after {
+          right: 5px;
+        }
+        
+        .compass {
+          position: absolute;
+          width: 30px;
+          height: 30px;
+          background: linear-gradient(135deg, #374151, #1f2937);
+          border-radius: 50%;
+          animation: floatReverse 12s ease-in-out infinite;
+        }
+        
+        .compass::before {
+          content: '';
+          position: absolute;
+          width: 4px;
+          height: 12px;
+          background: #ef4444;
+          top: 5px;
+          left: 13px;
+          border-radius: 2px;
+        }
+        
+        .compass::after {
+          content: '';
+          position: absolute;
+          width: 2px;
+          height: 2px;
+          background: #fbbf24;
+          border-radius: 50%;
+          top: 14px;
+          left: 14px;
+        }
+        
+        .field-zone {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(40px);
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
     // pass callback so game can tell React to refresh after saving score
     initMinesweeper?.({ onScoreSaved: loadLeaderboard });
   }, [loadLeaderboard]);
 
   return (
     <main className="min-h-[calc(100vh-80px)] relative overflow-hidden">
-      {/* Field/military-themed animated background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-black"></div>
-        
-        {/* Subtle grid pattern */}
-        <div className="absolute inset-0 opacity-5">
+      {/* Animated Background */}
+      <div className="animated-bg">
+        {/* Grid Cells */}
+        {[...Array(20)].map((_, i) => (
           <div
-            className="h-full w-full"
+            key={`grid-${i}`}
+            className="grid-cell"
             style={{
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
-              backgroundSize: "30px 30px",
+              width: `${Math.random() * 30 + 20}px`,
+              height: `${Math.random() * 30 + 20}px`,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 4}s`,
             }}
-          ></div>
-        </div>
+          />
+        ))}
         
-        {/* Floating mine-like elements */}
-        <div className="absolute inset-0">
-          {[...Array(8)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute opacity-10"
-              style={{
-                width: `${Math.random() * 20 + 10}px`,
-                height: `${Math.random() * 20 + 10}px`,
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                backgroundColor: `hsl(${Math.random() * 30}, 70%, 50%)`,
-                clipPath:
-                  "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)",
-                animation: `float ${Math.random() * 20 + 15}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 10}s`,
-              }}
-            />
-          ))}
-        </div>
+        {/* Mines */}
+        {[...Array(10)].map((_, i) => (
+          <div
+            key={`mine-${i}`}
+            className="mine"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 5}s`,
+              animationDuration: `${Math.random() * 3 + 5}s`,
+            }}
+          />
+        ))}
         
-        {/* Warning symbols */}
-        <div className="absolute inset-0">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute opacity-10"
-              style={{
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                animation: `float ${Math.random() * 25 + 20}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 15}s`,
-              }}
-            >
-              <svg
-                width="30"
-                height="30"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M1 21H23L12 2L1 21Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M12 8V12"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M12 16H12.01"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-          ))}
-        </div>
+        {/* Flags */}
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={`flag-${i}`}
+            className="flag"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 4}s`,
+              animationDuration: `${Math.random() * 2 + 4}s`,
+            }}
+          />
+        ))}
         
-        {/* Danger zones */}
-        <div className="absolute top-20 left-20 w-32 h-32 bg-red-500/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-20 right-20 w-40 h-40 bg-orange-500/10 rounded-full blur-3xl animate-float animation-delay-4000"></div>
-        <div className="absolute top-1/2 left-1/3 w-36 h-36 bg-amber-500/10 rounded-full blur-3xl animate-float animation-delay-2000"></div>
+        {/* Explosions */}
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={`explosion-${i}`}
+            className="explosion"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 5}s`,
+              animationDuration: `${Math.random() * 3 + 5}s`,
+            }}
+          />
+        ))}
+        
+        {/* Numbers */}
+        {[...Array(15)].map((_, i) => (
+          <div
+            key={`number-${i}`}
+            className="number"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              fontSize: `${Math.random() * 10 + 15}px`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${Math.random() * 2 + 3}s`,
+            }}
+          >
+            {Math.floor(Math.random() * 8) + 1}
+          </div>
+        ))}
+        
+        {/* Warning Signs */}
+        {[...Array(5)].map((_, i) => (
+          <div
+            key={`warning-${i}`}
+            className="warning-sign"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 2}s`,
+              animationDuration: `${Math.random() * 1 + 2}s`,
+            }}
+          />
+        ))}
+        
+        {/* Radars */}
+        <div
+          className="radar"
+          style={{
+            width: '80px',
+            height: '80px',
+            top: '15%',
+            right: '10%',
+          }}
+        />
+        <div
+          className="radar"
+          style={{
+            width: '60px',
+            height: '60px',
+            bottom: '20%',
+            left: '15%',
+          }}
+        />
+        
+        {/* Caution Tapes */}
+        <div
+          className="caution-tape"
+          style={{
+            width: '100%',
+            bottom: '10%',
+            transform: 'rotate(-2deg)',
+          }}
+        />
+        <div
+          className="caution-tape"
+          style={{
+            width: '80%',
+            top: '15%',
+            right: '0',
+            transform: 'rotate(1deg)',
+          }}
+        />
+        
+        {/* Binoculars */}
+        {[...Array(3)].map((_, i) => (
+          <div
+            key={`binoculars-${i}`}
+            className="binoculars"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 10}s`,
+              animationDuration: `${Math.random() * 5 + 10}s`,
+            }}
+          />
+        ))}
+        
+        {/* Compasses */}
+        {[...Array(4)].map((_, i) => (
+          <div
+            key={`compass-${i}`}
+            className="compass"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 12}s`,
+              animationDuration: `${Math.random() * 6 + 12}s`,
+            }}
+          />
+        ))}
+        
+        {/* Field Zones */}
+        <div 
+          className="field-zone"
+          style={{
+            width: '300px',
+            height: '300px',
+            top: '10%',
+            left: '10%',
+            backgroundColor: 'rgba(239, 68, 68, 0.05)',
+            animation: 'float 15s ease-in-out infinite',
+          }}
+        />
+        <div 
+          className="field-zone"
+          style={{
+            width: '250px',
+            height: '250px',
+            bottom: '15%',
+            right: '15%',
+            backgroundColor: 'rgba(251, 191, 36, 0.05)',
+            animation: 'floatReverse 12s ease-in-out infinite',
+          }}
+        />
+        <div 
+          className="field-zone"
+          style={{
+            width: '200px',
+            height: '200px',
+            top: '50%',
+            left: '60%',
+            backgroundColor: 'rgba(124, 45, 18, 0.05)',
+            animation: 'float 18s ease-in-out infinite',
+            animationDelay: '3s',
+          }}
+        />
       </div>
       
       {/* Main content */}
