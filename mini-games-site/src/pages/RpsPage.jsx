@@ -1,30 +1,13 @@
 // src/pages/RpsPage.jsx
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect } from "react";
 import { initRps } from "../games/rps";
 
 export default function RpsPage() {
-  const [scores, setScores] = useState([]);
-
-  const loadLeaderboard = useCallback(() => {
-    fetch("http://localhost:5000/api/scores/leaderboard?game=rps&limit=10")
-      .then((res) => res.json())
-      .then((rows) => setScores(rows))
-      .catch((err) =>
-        console.error("Error loading RPS leaderboard (React):", err)
-      );
-  }, []);
-
-  // initial load
-  useEffect(() => {
-    loadLeaderboard();
-  }, [loadLeaderboard]);
-
   useEffect(() => {
     if (typeof initRps === "function") {
-      // pass callback so game can trigger leaderboard refresh
-      initRps({ onScoreSaved: loadLeaderboard });
+      initRps();
     }
-  }, [loadLeaderboard]);
+  }, []);
 
   return (
     <main className="min-h-[calc(100vh-80px)] relative overflow-hidden">
@@ -91,14 +74,10 @@ export default function RpsPage() {
         
         {/* Battle lines */}
         <div className="absolute inset-0 opacity-5">
-          <div
-            className="h-full w-full"
-            style={{
-              backgroundImage:
-                "linear-gradient(45deg, rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(-45deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
-              backgroundSize: "40px 40px",
-            }}
-          ></div>
+          <div className="h-full w-full" style={{
+            backgroundImage: "linear-gradient(45deg, rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(-45deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+            backgroundSize: "40px 40px"
+          }}></div>
         </div>
         
         {/* Competitive energy zones */}
@@ -243,14 +222,7 @@ export default function RpsPage() {
                     <th className="py-2 text-right">Score</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {scores.map((row, index) => (
-                    <tr key={row._id || index}>
-                      <td>{index + 1}. {row.username}</td>
-                      <td className="py-1 text-right">{row.value}</td>
-                    </tr>
-                  ))}
-                </tbody>
+                <tbody>{/* rows filled by JS */}</tbody>
               </table>
             </div>
           </div>

@@ -21,6 +21,7 @@ export function initTicTacToe() {
   let board = ["", "", "", "", "", "", "", "", ""];
   let currentPlayer = "X";
   let gameRunning = false;
+  let winningLine = null;
 
   const grid = document.getElementById("ttt-grid");
   const status = document.getElementById("ttt-status");
@@ -53,6 +54,295 @@ export function initTicTacToe() {
   let playerWins = 0;
   let computerWins = 0;
   let matchActive = false;
+
+  // Add custom styles for the game
+  const tttStyles = `
+    <style id="ttt-styles">
+      #ttt-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        max-width: 320px;
+        margin: 0 auto;
+        position: relative;
+      }
+      
+      .tictactoe-cell {
+        height: 100px;
+        width: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(145deg, #1e293b, #334155);
+        border-radius: 12px;
+        border: 2px solid #475569;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+      
+      .tictactoe-cell:hover:not(:disabled) {
+        background: linear-gradient(145deg, #334155, #475569);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      }
+      
+      .tictactoe-cell:active:not(:disabled) {
+        transform: translateY(-2px);
+      }
+      
+      .tictactoe-cell:disabled {
+        cursor: default;
+      }
+      
+      .tictactoe-cell.winner {
+        background: linear-gradient(145deg, #065f46, #047857);
+        border-color: #10b981;
+        animation: pulse 1s infinite;
+      }
+      
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+      
+      .mark-x, .mark-o {
+        position: absolute;
+        width: 70%;
+        height: 70%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      
+      .mark-x {
+        stroke: #3b82f6;
+        stroke-width: 8;
+        stroke-linecap: round;
+        fill: none;
+        opacity: 0;
+        animation: fadeIn 0.3s forwards;
+      }
+      
+      .mark-o {
+        stroke: #ef4444;
+        stroke-width: 8;
+        fill: none;
+        opacity: 0;
+        animation: fadeIn 0.3s forwards;
+      }
+      
+      @keyframes fadeIn {
+        to { opacity: 1; }
+      }
+      
+      #ttt-status {
+        background: linear-gradient(to right, #1e293b, #334155);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        text-align: center;
+        font-weight: 500;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      #ttt-status.win {
+        background: linear-gradient(to right, #065f46, #047857);
+      }
+      
+      #ttt-status.loss {
+        background: linear-gradient(to right, #7f1d1d, #991b1b);
+      }
+      
+      #ttt-status.tie {
+        background: linear-gradient(to right, #78350f, #92400e);
+      }
+      
+      #ttt-status-bar {
+        background: linear-gradient(to right, #1e293b, #334155);
+        color: white;
+        padding: 12px 15px;
+        border-radius: 10px;
+        margin: 15px 0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      
+      .status-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      
+      .status-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      .status-icon {
+        font-size: 18px;
+      }
+      
+      .control-button {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        color: white;
+      }
+      
+      #ttt-start-match-btn {
+        background: linear-gradient(145deg, #10b981, #059669);
+      }
+      
+      #ttt-start-match-btn:hover {
+        background: linear-gradient(145deg, #059669, #047857);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      
+      #ttt-reset-match-btn {
+        background: linear-gradient(145deg, #ef4444, #dc2626);
+      }
+      
+      #ttt-reset-match-btn:hover {
+        background: linear-gradient(145deg, #dc2626, #b91c1c);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      
+      #ttt-reset {
+        background: linear-gradient(145deg, #6366f1, #4f46e5);
+      }
+      
+      #ttt-reset:hover {
+        background: linear-gradient(145deg, #4f46e5, #4338ca);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      
+      .winning-line {
+        position: absolute;
+        background: linear-gradient(90deg, rgba(16, 185, 129, 0.8), rgba(5, 150, 105, 0.8));
+        z-index: 10;
+        transform-origin: center;
+        animation: drawLine 0.5s ease-out forwards;
+      }
+      
+      @keyframes drawLine {
+        from { transform: scale(0, 1); }
+        to { transform: scale(1, 1); }
+      }
+      
+      .round-selector {
+        margin: 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      #ttt-rounds-select {
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        background-color: white;
+      }
+    </style>
+  `;
+  
+  // Add styles to head if not already added
+  if (!document.getElementById('ttt-styles')) {
+    const styleElement = document.createElement('div');
+    styleElement.id = 'ttt-styles';
+    styleElement.innerHTML = tttStyles;
+    document.head.appendChild(styleElement);
+  }
+
+  // Create SVG for X mark
+  function createXMark() {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.classList.add("mark-x");
+    svg.setAttribute("viewBox", "0 0 100 100");
+    
+    const line1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line1.setAttribute("x1", "20");
+    line1.setAttribute("y1", "20");
+    line1.setAttribute("x2", "80");
+    line1.setAttribute("y2", "80");
+    
+    const line2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line2.setAttribute("x1", "80");
+    line2.setAttribute("y1", "20");
+    line2.setAttribute("x2", "20");
+    line2.setAttribute("y2", "80");
+    
+    svg.appendChild(line1);
+    svg.appendChild(line2);
+    
+    return svg;
+  }
+
+  // Create SVG for O mark
+  function createOMark() {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.classList.add("mark-o");
+    svg.setAttribute("viewBox", "0 0 100 100");
+    
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("cx", "50");
+    circle.setAttribute("cy", "50");
+    circle.setAttribute("r", "30");
+    
+    svg.appendChild(circle);
+    
+    return svg;
+  }
+
+  // Create winning line
+  function createWinningLine(startIndex, endIndex) {
+    // Remove any existing winning line
+    const existingLine = grid.querySelector(".winning-line");
+    if (existingLine) {
+      grid.removeChild(existingLine);
+    }
+    
+    const startCell = grid.children[startIndex];
+    const endCell = grid.children[endIndex];
+    
+    if (!startCell || !endCell) return;
+    
+    const startRect = startCell.getBoundingClientRect();
+    const endRect = endCell.getBoundingClientRect();
+    const gridRect = grid.getBoundingClientRect();
+    
+    const startX = startRect.left + startRect.width / 2 - gridRect.left;
+    const startY = startRect.top + startRect.height / 2 - gridRect.top;
+    const endX = endRect.left + endRect.width / 2 - gridRect.left;
+    const endY = endRect.top + endRect.height / 2 - gridRect.top;
+    
+    const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+    const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+    
+    const line = document.createElement("div");
+    line.classList.add("winning-line");
+    line.style.width = `${length}px`;
+    line.style.height = "8px";
+    line.style.left = `${startX}px`;
+    line.style.top = `${startY}px`;
+    line.style.transform = `rotate(${angle}deg)`;
+    line.style.transformOrigin = "0 50%";
+    
+    grid.appendChild(line);
+  }
 
   // ---- leaderboard loader ----
   function loadTttLeaderboard() {
@@ -138,17 +428,28 @@ export function initTicTacToe() {
   }
 
   function renderBoard() {
+    // Clear any existing winning line
+    const existingLine = grid.querySelector(".winning-line");
+    if (existingLine) {
+      grid.removeChild(existingLine);
+    }
+    
     grid.innerHTML = "";
     board.forEach((cell, index) => {
       const btn = document.createElement("button");
-      // visible 3x3 grid cell
-      btn.className =
-        "tictactoe-cell h-16 w-16 sm:h-20 sm:w-20 flex items-center justify-center " +
-        "text-2xl sm:text-3xl font-bold rounded-xl border border-slate-600 " +
-        "bg-slate-900/80 text-slate-100 hover:bg-slate-800/80 transition-colors disabled:opacity-60";
-      btn.textContent = cell;
-
+      btn.className = "tictactoe-cell";
       btn.disabled = !!cell || !gameRunning || currentPlayer !== "X";
+
+      if (cell === "X") {
+        btn.appendChild(createXMark());
+      } else if (cell === "O") {
+        btn.appendChild(createOMark());
+      }
+
+      // Highlight winning cells
+      if (winningLine && winningLine.includes(index)) {
+        btn.classList.add("winner");
+      }
 
       const handler = () => {
         if (!gameRunning || currentPlayer !== "X" || board[index]) return;
@@ -181,24 +482,35 @@ export function initTicTacToe() {
       [0, 4, 8],
       [2, 4, 6],
     ];
-    return lines.some(
-      ([a, c, d]) => b[a] === player && b[c] === player && b[d] === player
-    );
+    
+    for (const [a, c, d] of lines) {
+      if (b[a] === player && b[c] === player && b[d] === player) {
+        winningLine = [a, c, d];
+        return true;
+      }
+    }
+    
+    return false;
   }
 
   function updateStatusBar() {
     const roundNumber = currentRound + 1;
-    roundInfoSpan.textContent = `Round ${roundNumber} of ${totalRounds}`;
-    scoreInfoSpan.textContent = `You ${playerWins} - ${computerWins} CPU`;
+    roundInfoSpan.innerHTML = `<span class="status-icon">🎮</span> Round ${roundNumber} of ${totalRounds}`;
+    scoreInfoSpan.innerHTML = `<span class="status-icon">🏆</span> You ${playerWins} - ${computerWins} CPU`;
   }
 
   function resetBoardOnly() {
     board = ["", "", "", "", "", "", "", "", ""];
     currentPlayer = "X";
     gameRunning = matchActive;
+    winningLine = null;
+    
+    // Reset status styling
+    status.className = "";
+    
     status.textContent = matchActive
       ? "Your turn."
-      : "Choose “Start Match” to play.";
+      : "Choose \"Start Match\" to play.";
     renderBoard();
   }
 
@@ -222,7 +534,7 @@ export function initTicTacToe() {
     playerWins = 0;
     computerWins = 0;
     statusBar.style.display = "none";
-    status.textContent = "Choose “Start Match” to play.";
+    status.textContent = "Choose \"Start Match\" to play.";
     resetBoardOnly();
   }
 
@@ -232,31 +544,45 @@ export function initTicTacToe() {
 
     let finalMessage;
     let finalScoreForBackend = 0;
+    let statusClass = "";
 
     if (playerWins > computerWins) {
       finalMessage = `You won the match! Final score: You ${playerWins} - ${computerWins} CPU.`;
       finalScoreForBackend = 1;
+      statusClass = "win";
     } else if (playerWins < computerWins) {
       finalMessage = `You lost the match. Final score: You ${playerWins} - ${computerWins} CPU.`;
       finalScoreForBackend = -1;
+      statusClass = "loss";
     } else {
       finalMessage = `The match is a tie. Final score: You ${playerWins} - ${computerWins} CPU.`;
       finalScoreForBackend = 0;
+      statusClass = "tie";
     }
 
     status.textContent = finalMessage;
+    status.className = statusClass;
     submitScore(finalScoreForBackend, finalMessage);
   }
 
   function handleRoundEnd(result) {
     gameRunning = false;
 
+    // Update status with appropriate styling
+    status.className = result;
+    
     if (result === "win") {
       playerWins += 1;
       status.textContent = "You win this round!";
+      if (winningLine) {
+        createWinningLine(winningLine[0], winningLine[2]);
+      }
     } else if (result === "loss") {
       computerWins += 1;
       status.textContent = "Computer wins this round!";
+      if (winningLine) {
+        createWinningLine(winningLine[0], winningLine[2]);
+      }
     } else {
       status.textContent = "This round is a tie!";
     }
@@ -267,13 +593,15 @@ export function initTicTacToe() {
       computerWins >= winsNeeded ||
       currentRound + 1 >= totalRounds
     ) {
-      finishMatch();
+      setTimeout(() => {
+        finishMatch();
+      }, 1500);
     } else {
       currentRound += 1;
       updateStatusBar();
       setTimeout(() => {
         resetBoardOnly();
-      }, 800);
+      }, 1500);
     }
   }
 
