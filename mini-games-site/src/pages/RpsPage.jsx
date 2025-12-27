@@ -4,6 +4,273 @@ import { initRps } from "../games/rps";
 
 export default function RpsPage() {
   useEffect(() => {
+    // Add custom styles for animations
+    const styleId = "rps-animations";
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement("style");
+      style.id = styleId;
+      style.textContent = `
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        @keyframes floatReverse {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-15px) rotate(-5deg); }
+        }
+        
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes rockPulse {
+          0%, 100% { transform: scale(1); opacity: 0.7; }
+          50% { transform: scale(1.1); opacity: 1; }
+        }
+        
+        @keyframes paperFloat {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          25% { transform: translateY(-10px) rotate(2deg); }
+          50% { transform: translateY(-20px) rotate(0deg); }
+          75% { transform: translateY(-10px) rotate(-2deg); }
+        }
+        
+        @keyframes scissorsClash {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(-15deg); }
+          75% { transform: rotate(15deg); }
+        }
+        
+        @keyframes trophyShine {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        
+        @keyframes medalSpin {
+          0% { transform: rotateY(0deg); }
+          100% { transform: rotateY(360deg); }
+        }
+        
+        @keyframes swordClash {
+          0%, 100% { transform: translateX(0) rotate(0deg); }
+          50% { transform: translateX(10px) rotate(5deg); }
+        }
+        
+        @keyframes shieldBlock {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+        
+        @keyframes handClash {
+          0% { transform: rotate(0deg); }
+          25% { transform: rotate(-10deg); }
+          75% { transform: rotate(10deg); }
+        }
+        
+        .animated-bg {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: -1;
+          overflow: hidden;
+          background: linear-gradient(-45deg, #0f172a, #064e3b, #0f172a, #065f46);
+          background-size: 400% 400%;
+          animation: gradientShift 15s ease infinite;
+        }
+        
+        .rock-symbol {
+          position: absolute;
+          width: 40px;
+          height: 40px;
+          background: linear-gradient(135deg, #6b7280, #4b5563);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: rockPulse 5s ease-in-out infinite;
+        }
+        
+        .rock-symbol::before {
+          content: '';
+          position: absolute;
+          width: 30px;
+          height: 30px;
+          background: linear-gradient(135deg, #9ca3af, #6b7280);
+          border-radius: 50%;
+        }
+        
+        .paper-symbol {
+          position: absolute;
+          width: 40px;
+          height: 50px;
+          background: linear-gradient(to bottom, #f8fafc, #e2e8f0);
+          border-radius: 3px;
+          box-shadow: 0 0 5px rgba(0,0,0,0.2);
+          animation: paperFloat 8s ease-in-out infinite;
+        }
+        
+        .paper-symbol::before {
+          content: '';
+          position: absolute;
+          top: 5px;
+          left: 5px;
+          right: 5px;
+          height: 2px;
+          background: #cbd5e1;
+        }
+        
+        .paper-symbol::after {
+          content: '';
+          position: absolute;
+          top: 12px;
+          left: 5px;
+          right: 15px;
+          height: 2px;
+          background: #cbd5e1;
+        }
+        
+        .scissors-symbol {
+          position: absolute;
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: scissorsClash 4s ease-in-out infinite;
+        }
+        
+        .scissors-symbol::before,
+        .scissors-symbol::after {
+          content: '';
+          position: absolute;
+          width: 4px;
+          height: 30px;
+          background: linear-gradient(to bottom, #ef4444, #dc2626);
+          border-radius: 2px;
+        }
+        
+        .scissors-symbol::before {
+          transform: rotate(-10deg);
+        }
+        
+        .scissors-symbol::after {
+          transform: rotate(10deg);
+        }
+        
+        .trophy {
+          position: absolute;
+          width: 30px;
+          height: 40px;
+          animation: trophyShine 6s ease-in-out infinite;
+        }
+        
+        .trophy::before {
+          content: '';
+          position: absolute;
+          width: 30px;
+          height: 25px;
+          background: linear-gradient(to bottom, #fbbf24, #f59e0b);
+          border-radius: 15px 15px 5px 5px;
+        }
+        
+        .trophy::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 10px;
+          width: 10px;
+          height: 15px;
+          background: linear-gradient(to bottom, #fbbf24, #f59e0b);
+        }
+        
+        .medal {
+          position: absolute;
+          width: 25px;
+          height: 25px;
+          background: linear-gradient(135deg, #eab308, #ca8a04);
+          border-radius: 50%;
+          animation: medalSpin 8s linear infinite;
+        }
+        
+        .medal::before {
+          content: '1';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: #713f12;
+          font-weight: bold;
+        }
+        
+        .sword {
+          position: absolute;
+          width: 3px;
+          height: 40px;
+          background: linear-gradient(to bottom, #94a3b8, #64748b);
+          animation: swordClash 3s ease-in-out infinite;
+        }
+        
+        .sword::before {
+          content: '';
+          position: absolute;
+          top: -5px;
+          left: -6px;
+          width: 15px;
+          height: 15px;
+          background: linear-gradient(135deg, #94a3b8, #64748b);
+          clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+        }
+        
+        .shield {
+          position: absolute;
+          width: 30px;
+          height: 35px;
+          background: linear-gradient(135deg, #3b82f6, #2563eb);
+          border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+          animation: shieldBlock 5s ease-in-out infinite;
+        }
+        
+        .hand {
+          position: absolute;
+          width: 30px;
+          height: 30px;
+          animation: handClash 4s ease-in-out infinite;
+        }
+        
+        .hand::before {
+          content: '';
+          position: absolute;
+          width: 15px;
+          height: 20px;
+          background: linear-gradient(to bottom, #f8fafc, #e2e8f0);
+          border-radius: 10px 10px 5px 5px;
+        }
+        
+        .hand::after {
+          content: '';
+          position: absolute;
+          top: 5px;
+          left: 5px;
+          width: 5px;
+          height: 10px;
+          background: #cbd5e1;
+          border-radius: 2px;
+        }
+        
+        .battle-zone {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(40px);
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
     if (typeof initRps === "function") {
       initRps();
     }
@@ -11,79 +278,158 @@ export default function RpsPage() {
 
   return (
     <main className="min-h-[calc(100vh-80px)] relative overflow-hidden">
-      {/* Competitive-themed animated background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-black"></div>
+      {/* Animated Background */}
+      <div className="animated-bg">
+        {/* Rock Symbols */}
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={`rock-${i}`}
+            className="rock-symbol"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 5}s`,
+              animationDuration: `${Math.random() * 3 + 5}s`,
+            }}
+          />
+        ))}
         
-        {/* Floating RPS symbols */}
-        <div className="absolute inset-0">
-          {/* Rock symbols */}
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={`rock-${i}`}
-              className="absolute opacity-15"
-              style={{
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                animation: `float ${Math.random() * 20 + 15}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 10}s`,
-              }}
-            >
-              <div className="w-10 h-10 bg-gray-700/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl">🗻</span>
-              </div>
-            </div>
-          ))}
-          
-          {/* Paper symbols */}
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={`paper-${i}`}
-              className="absolute opacity-15"
-              style={{
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                animation: `float ${Math.random() * 20 + 15}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 10}s`,
-              }}
-            >
-              <div className="w-10 h-10 bg-blue-700/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl">📃</span>
-              </div>
-            </div>
-          ))}
-          
-          {/* Scissors symbols */}
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={`scissors-${i}`}
-              className="absolute opacity-15"
-              style={{
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                animation: `float ${Math.random() * 20 + 15}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 10}s`,
-              }}
-            >
-              <div className="w-10 h-10 bg-red-700/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl">⚔️</span>
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Paper Symbols */}
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={`paper-${i}`}
+            className="paper-symbol"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              transform: `rotate(${Math.random() * 20 - 10}deg)`,
+              animationDelay: `${Math.random() * 5}s`,
+              animationDuration: `${Math.random() * 3 + 8}s`,
+            }}
+          />
+        ))}
         
-        {/* Battle lines */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="h-full w-full" style={{
-            backgroundImage: "linear-gradient(45deg, rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(-45deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
-            backgroundSize: "40px 40px"
-          }}></div>
-        </div>
+        {/* Scissors Symbols */}
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={`scissors-${i}`}
+            className="scissors-symbol"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 4}s`,
+              animationDuration: `${Math.random() * 2 + 4}s`,
+            }}
+          />
+        ))}
         
-        {/* Competitive energy zones */}
-        <div className="absolute top-20 left-20 w-32 h-32 bg-gray-500/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-20 right-20 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl animate-float animation-delay-4000"></div>
-        <div className="absolute top-1/2 left-1/3 w-36 h-36 bg-red-500/10 rounded-full blur-3xl animate-float animation-delay-2000"></div>
+        {/* Trophies */}
+        {[...Array(5)].map((_, i) => (
+          <div
+            key={`trophy-${i}`}
+            className="trophy"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 6}s`,
+              animationDuration: `${Math.random() * 3 + 6}s`,
+            }}
+          />
+        ))}
+        
+        {/* Medals */}
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={`medal-${i}`}
+            className="medal"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 8}s`,
+              animationDuration: `${Math.random() * 4 + 8}s`,
+            }}
+          />
+        ))}
+        
+        {/* Swords */}
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={`sword-${i}`}
+            className="sword"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              transform: `rotate(${Math.random() * 360}deg)`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${Math.random() * 2 + 3}s`,
+            }}
+          />
+        ))}
+        
+        {/* Shields */}
+        {[...Array(5)].map((_, i) => (
+          <div
+            key={`shield-${i}`}
+            className="shield"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 5}s`,
+              animationDuration: `${Math.random() * 3 + 5}s`,
+            }}
+          />
+        ))}
+        
+        {/* Hands */}
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={`hand-${i}`}
+            className="hand"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              transform: `rotate(${Math.random() * 360}deg)`,
+              animationDelay: `${Math.random() * 4}s`,
+              animationDuration: `${Math.random() * 2 + 4}s`,
+            }}
+          />
+        ))}
+        
+        {/* Battle Zones */}
+        <div 
+          className="battle-zone"
+          style={{
+            width: '300px',
+            height: '300px',
+            top: '10%',
+            left: '10%',
+            backgroundColor: 'rgba(107, 114, 128, 0.05)',
+            animation: 'float 15s ease-in-out infinite',
+          }}
+        />
+        <div 
+          className="battle-zone"
+          style={{
+            width: '250px',
+            height: '250px',
+            bottom: '15%',
+            right: '15%',
+            backgroundColor: 'rgba(59, 130, 246, 0.05)',
+            animation: 'floatReverse 12s ease-in-out infinite',
+          }}
+        />
+        <div 
+          className="battle-zone"
+          style={{
+            width: '200px',
+            height: '200px',
+            top: '50%',
+            left: '60%',
+            backgroundColor: 'rgba(239, 68, 68, 0.05)',
+            animation: 'float 18s ease-in-out infinite',
+            animationDelay: '3s',
+          }}
+        />
       </div>
       
       {/* Main content */}
@@ -94,7 +440,7 @@ export default function RpsPage() {
             Rock Paper Scissors
           </h2>
           <p className="mt-2 text-sm md:text-base text-slate-300">
-            Choose Rock, Paper, or Scissors and see if you can beat the computer.
+            Choose Rock, Paper, or Scissors and see if you can beat to computer.
           </p>
         </div>
 

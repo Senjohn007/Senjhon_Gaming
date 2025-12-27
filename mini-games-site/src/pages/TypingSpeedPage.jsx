@@ -65,6 +65,38 @@ export default function TypingSpeedPage() {
           100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
         }
         
+        @keyframes keyPress {
+          0% { transform: scale(1); }
+          50% { transform: scale(0.95); }
+          100% { transform: scale(1); }
+        }
+        
+        @keyframes cursorTrail {
+          0% { opacity: 0.8; }
+          100% { opacity: 0; }
+        }
+        
+        @keyframes textWave {
+          0% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
+          100% { transform: translateY(0); }
+        }
+        
+        @keyframes typeWriter {
+          0% { width: 0; }
+          100% { width: 100%; }
+        }
+        
+        @keyframes wpmGlow {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.8; }
+        }
+        
+        @keyframes accuracyBar {
+          0% { width: 0%; }
+          100% { width: var(--accuracy); }
+        }
+        
         .typing-cursor {
           display: inline-block;
           width: 2px;
@@ -176,53 +208,123 @@ export default function TypingSpeedPage() {
           animation: gradientShift 15s ease infinite;
         }
         
-        .floating-key {
+        .keyboard-key {
           position: absolute;
-          font-size: 20px;
-          color: rgba(217, 70, 239, 0.1);
+          width: 40px;
+          height: 40px;
+          background: linear-gradient(135deg, #374151, #1f2937);
+          border-radius: 5px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: monospace;
+          font-size: 14px;
+          color: #e5e7eb;
           animation: floatUp 20s linear infinite;
         }
         
-        .floating-key:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 25s; }
-        .floating-key:nth-child(2) { left: 20%; animation-delay: 2s; animation-duration: 22s; }
-        .floating-key:nth-child(3) { left: 30%; animation-delay: 5s; animation-duration: 28s; }
-        .floating-key:nth-child(4) { left: 40%; animation-delay: 7s; animation-duration: 24s; }
-        .floating-key:nth-child(5) { left: 50%; animation-delay: 1s; animation-duration: 26s; }
-        .floating-key:nth-child(6) { left: 60%; animation-delay: 4s; animation-duration: 23s; }
-        .floating-key:nth-child(7) { left: 70%; animation-delay: 3s; animation-duration: 27s; }
-        .floating-key:nth-child(8) { left: 80%; animation-delay: 6s; animation-duration: 25s; }
-        .floating-key:nth-child(9) { left: 90%; animation-delay: 8s; animation-duration: 29s; }
-        
-        .floating-circle {
+        .keyboard-key::before {
+          content: '';
           position: absolute;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(217, 70, 239, 0.1) 0%, rgba(217, 70, 239, 0) 70%);
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+          border-radius: 5px;
+        }
+        
+        .text-fragment {
+          position: absolute;
+          font-family: monospace;
+          color: rgba(217, 70, 239, 0.2);
           animation: float 15s ease-in-out infinite;
         }
         
-        .floating-circle:nth-child(10) {
-          width: 300px;
-          height: 300px;
-          top: 10%;
-          left: 10%;
-          animation-delay: 0s;
+        .typing-cursor-bg {
+          position: absolute;
+          width: 2px;
+          height: 20px;
+          background: linear-gradient(to bottom, transparent, rgba(217, 70, 239, 0.7), transparent);
+          animation: float 8s ease-in-out infinite;
         }
         
-        .floating-circle:nth-child(11) {
-          width: 200px;
-          height: 200px;
-          top: 60%;
-          right: 15%;
-          animation-delay: 2s;
-          animation-name: floatReverse;
+        .cursor-trail {
+          position: absolute;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: rgba(217, 70, 239, 0.5);
+          animation: cursorTrail 2s ease-out infinite;
         }
         
-        .floating-circle:nth-child(12) {
-          width: 250px;
-          height: 250px;
-          bottom: 10%;
-          left: 20%;
-          animation-delay: 4s;
+        .keyboard-layout {
+          position: absolute;
+          opacity: 0.1;
+          animation: float 20s ease-in-out infinite;
+        }
+        
+        .keyboard-row {
+          display: flex;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .keyboard-layout-key {
+            width: 30px;
+            height: 30px;
+            background: rgba(217, 70, 239, 0.1);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            font-size: 12px;
+            color: rgba(217, 70, 239, 0.5);
+        }
+        
+        .wpm-indicator {
+          position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid rgba(217, 70, 239, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            font-size: 12px;
+            color: rgba(217, 70, 239, 0.5);
+            animation: wpmGlow 5s ease-in-out infinite;
+        }
+        
+        .word-bubble {
+            position: absolute;
+            padding: 5px 10px;
+            background: rgba(217, 70, 239, 0.1);
+            border-radius: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            color: rgba(217, 70, 239, 0.3);
+            animation: float 10s ease-in-out infinite;
+        }
+        
+        .word-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 10px;
+            width: 10px;
+            height: 10px;
+            background: rgba(217, 70, 239, 0.1);
+            transform: rotate(45deg);
+        }
+        
+        .typing-zone {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(40px);
         }
       `;
       document.head.appendChild(style);
@@ -237,21 +339,180 @@ export default function TypingSpeedPage() {
     <>
       {/* Animated Background */}
       <div className="animated-bg">
-        {/* Floating Keyboard Keys */}
-        <div className="floating-key">A</div>
-        <div className="floating-key">S</div>
-        <div className="floating-key">D</div>
-        <div className="floating-key">F</div>
-        <div className="floating-key">J</div>
-        <div className="floating-key">K</div>
-        <div className="floating-key">L</div>
-        <div className="floating-key">W</div>
-        <div className="floating-key">E</div>
+        {/* Keyboard Keys */}
+        {[...Array(20)].map((_, i) => {
+          const keys = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Z'];
+          const key = keys[Math.floor(Math.random() * keys.length)];
+          return (
+            <div
+              key={`key-${i}`}
+              className="keyboard-key"
+              style={{
+                left: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 20}s`,
+                animationDuration: `${Math.random() * 10 + 20}s`,
+              }}
+            >
+              {key}
+            </div>
+          );
+        })}
         
-        {/* Floating Circles */}
-        <div className="floating-circle"></div>
-        <div className="floating-circle"></div>
-        <div className="floating-circle"></div>
+        {/* Text Fragments */}
+        {[...Array(15)].map((_, i) => {
+          const words = ['the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had', 'her', 'was', 'one', 'our', 'out', 'day'];
+          const word = words[Math.floor(Math.random() * words.length)];
+          return (
+            <div
+              key={`text-${i}`}
+              className="text-fragment"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                fontSize: `${Math.random() * 10 + 10}px`,
+                animationDelay: `${Math.random() * 10}s`,
+                animationDuration: `${Math.random() * 5 + 15}s`,
+              }}
+            >
+              {word}
+            </div>
+          );
+        })}
+        
+        {/* Typing Cursors */}
+        {[...Array(10)].map((_, i) => (
+          <div
+            key={`cursor-${i}`}
+            className="typing-cursor-bg"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 8}s`,
+              animationDuration: `${Math.random() * 4 + 8}s`,
+            }}
+          />
+        ))}
+        
+        {/* Cursor Trails */}
+        {[...Array(15)].map((_, i) => (
+          <div
+            key={`trail-${i}`}
+            className="cursor-trail"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 2}s`,
+            }}
+          />
+        ))}
+        
+        {/* Keyboard Layouts */}
+        {[...Array(3)].map((_, i) => (
+          <div
+            key={`layout-${i}`}
+            className="keyboard-layout"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              transform: `rotate(${Math.random() * 20 - 10}deg)`,
+              animationDelay: `${Math.random() * 20}s`,
+              animationDuration: `${Math.random() * 10 + 20}s`,
+            }}
+          >
+            <div className="keyboard-row">
+              <div className="keyboard-layout-key">Q</div>
+              <div className="keyboard-layout-key">W</div>
+              <div className="keyboard-layout-key">E</div>
+              <div className="keyboard-layout-key">R</div>
+              <div className="keyboard-layout-key">T</div>
+            </div>
+            <div className="keyboard-row">
+              <div className="keyboard-layout-key">A</div>
+              <div className="keyboard-layout-key">S</div>
+              <div className="keyboard-layout-key">D</div>
+              <div className="keyboard-layout-key">F</div>
+              <div className="keyboard-layout-key">G</div>
+            </div>
+            <div className="keyboard-row">
+              <div className="keyboard-layout-key">Z</div>
+              <div className="keyboard-layout-key">X</div>
+              <div className="keyboard-layout-key">C</div>
+              <div className="keyboard-layout-key">V</div>
+              <div className="keyboard-layout-key">B</div>
+            </div>
+          </div>
+        ))}
+        
+        {/* WPM Indicators */}
+        {[...Array(5)].map((_, i) => (
+          <div
+            key={`wpm-${i}`}
+            className="wpm-indicator"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 5}s`,
+            }}
+          >
+            {Math.floor(Math.random() * 100 + 20)} WPM
+          </div>
+        ))}
+        
+        {/* Word Bubbles */}
+        {[...Array(8)].map((_, i) => {
+          const words = ['fast', 'quick', 'speed', 'type', 'keyboard', 'fingers', 'accuracy', 'words'];
+          const word = words[Math.floor(Math.random() * words.length)];
+          return (
+            <div
+              key={`bubble-${i}`}
+              className="word-bubble"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 10}s`,
+                animationDuration: `${Math.random() * 5 + 10}s`,
+              }}
+            >
+              {word}
+            </div>
+          );
+        })}
+        
+        {/* Typing Zones */}
+        <div 
+          className="typing-zone"
+          style={{
+            width: '300px',
+            height: '300px',
+            top: '10%',
+            left: '10%',
+            backgroundColor: 'rgba(217, 70, 239, 0.05)',
+            animation: 'float 15s ease-in-out infinite',
+          }}
+        />
+        <div 
+          className="typing-zone"
+          style={{
+            width: '250px',
+            height: '250px',
+            bottom: '15%',
+            right: '15%',
+            backgroundColor: 'rgba(168, 85, 247, 0.05)',
+            animation: 'floatReverse 12s ease-in-out infinite',
+          }}
+        />
+        <div 
+          className="typing-zone"
+          style={{
+            width: '200px',
+            height: '200px',
+            top: '50%',
+            left: '60%',
+            backgroundColor: 'rgba(236, 72, 153, 0.05)',
+            animation: 'float 18s ease-in-out infinite',
+            animationDelay: '3s',
+          }}
+        />
       </div>
       
       <main className="min-h-[calc(100vh-80px)] text-slate-100 relative z-10">
@@ -262,7 +523,7 @@ export default function TypingSpeedPage() {
               Typing Speed Test
             </h2>
             <p className="mt-2 text-sm md:text-base text-slate-300">
-              Type the paragraph below as fast and accurately as you can, then
+              Type paragraph below as fast and accurately as you can, then
               press <span className="font-semibold">Done</span> to see your WPM
               and accuracy.
             </p>

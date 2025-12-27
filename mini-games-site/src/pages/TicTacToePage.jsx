@@ -4,6 +4,211 @@ import { initTicTacToe, destroyTicTacToe } from "../games/tictactoe";
 
 export default function TicTacToePage() {
   useEffect(() => {
+    // Add custom styles for animations
+    const styleId = "tictactoe-animations";
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement("style");
+      style.id = styleId;
+      style.textContent = `
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        @keyframes floatReverse {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-15px) rotate(-5deg); }
+        }
+        
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes xDraw {
+          0% { transform: rotate(0deg) scale(0.8); opacity: 0.5; }
+          50% { transform: rotate(90deg) scale(1); opacity: 1; }
+          100% { transform: rotate(180deg) scale(0.8); opacity: 0.5; }
+        }
+        
+        @keyframes oDraw {
+          0% { transform: scale(0.8); opacity: 0.5; }
+          50% { transform: scale(1.1); opacity: 1; }
+          100% { transform: scale(0.8); opacity: 0.5; }
+        }
+        
+        @keyframes gridPulse {
+          0%, 100% { opacity: 0.1; }
+          50% { opacity: 0.3; }
+        }
+        
+        @keyframes mathSymbolFloat {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          25% { transform: translateY(-15px) rotate(5deg); }
+          50% { transform: translateY(0) rotate(0deg); }
+          75% { transform: translateY(-10px) rotate(-5deg); }
+        }
+        
+        @keyframes winLine {
+          0% { transform: scaleX(0); opacity: 0; }
+          50% { transform: scaleX(1); opacity: 0.7; }
+          100% { transform: scaleX(0); opacity: 0; }
+        }
+        
+        @keyframes strategyBoard {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes ticTacToe {
+          0% { transform: scale(1); opacity: 0.7; }
+          50% { transform: scale(1.05); opacity: 1; }
+          100% { transform: scale(1); opacity: 0.7; }
+        }
+        
+        .animated-bg {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: -1;
+          overflow: hidden;
+          background: linear-gradient(-45deg, #0f172a, #451a03, #0f172a, #78350f);
+          background-size: 400% 400%;
+          animation: gradientShift 15s ease infinite;
+        }
+        
+        .x-symbol {
+          position: absolute;
+          width: 40px;
+          height: 40px;
+          animation: xDraw 8s ease-in-out infinite;
+        }
+        
+        .x-symbol::before,
+        .x-symbol::after {
+          content: '';
+          position: absolute;
+          width: 100%;
+          height: 4px;
+          background: linear-gradient(to right, rgba(251, 191, 36, 0.7), rgba(251, 191, 36, 0.3));
+          top: 50%;
+          left: 0;
+          transform-origin: center;
+        }
+        
+        .x-symbol::before {
+          transform: rotate(45deg);
+        }
+        
+        .x-symbol::after {
+          transform: rotate(-45deg);
+        }
+        
+        .o-symbol {
+          position: absolute;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          border: 4px solid rgba(251, 191, 36, 0.7);
+          animation: oDraw 7s ease-in-out infinite;
+        }
+        
+        .grid-pattern {
+          position: absolute;
+          opacity: 0.1;
+        }
+        
+        .grid-pattern::before,
+        .grid-pattern::after {
+          content: '';
+          position: absolute;
+          background: rgba(251, 191, 36, 0.2);
+        }
+        
+        .grid-pattern::before {
+          width: 100%;
+          height: 2px;
+          top: 50%;
+          left: 0;
+        }
+        
+        .grid-pattern::after {
+          width: 2px;
+          height: 100%;
+          top: 0;
+          left: 50%;
+        }
+        
+        .math-symbol {
+          position: absolute;
+          font-family: monospace;
+          font-weight: bold;
+          color: rgba(251, 191, 36, 0.3);
+          animation: mathSymbolFloat 10s ease-in-out infinite;
+        }
+        
+        .win-line {
+          position: absolute;
+          height: 4px;
+          background: linear-gradient(to right, rgba(251, 191, 36, 0.7), rgba(251, 191, 36, 0.3));
+          animation: winLine 6s ease-in-out infinite;
+        }
+        
+        .strategy-board {
+          position: absolute;
+          width: 60px;
+          height: 60px;
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          grid-template-rows: 1fr 1fr 1fr;
+          gap: 2px;
+          animation: strategyBoard 20s linear infinite;
+        }
+        
+        .strategy-board::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(251, 191, 36, 0.1);
+          border-radius: 5px;
+        }
+        
+        .tic-tac-toe-cell {
+          position: relative;
+        }
+        
+        .tic-tac-toe-cell::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(251, 191, 36, 0.05);
+          border-radius: 2px;
+        }
+        
+        .geometric-shape {
+          position: absolute;
+          opacity: 0.1;
+          animation: float 15s ease-in-out infinite;
+        }
+        
+        .game-zone {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(40px);
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
     initTicTacToe();
 
     return () => {
@@ -15,85 +220,186 @@ export default function TicTacToePage() {
 
   return (
     <main className="min-h-[calc(100vh-80px)] relative overflow-hidden">
-      {/* Grid/math-themed animated background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-black"></div>
+      {/* Animated Background */}
+      <div className="animated-bg">
+        {/* X Symbols */}
+        {[...Array(10)].map((_, i) => (
+          <div
+            key={`x-${i}`}
+            className="x-symbol"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 8}s`,
+              animationDuration: `${Math.random() * 4 + 8}s`,
+            }}
+          />
+        ))}
         
-        {/* Grid pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="h-full w-full" style={{
-            backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
-            backgroundSize: "40px 40px"
-          }}></div>
-        </div>
+        {/* O Symbols */}
+        {[...Array(10)].map((_, i) => (
+          <div
+            key={`o-${i}`}
+            className="o-symbol"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 7}s}`,
+              animationDuration: `${Math.random() * 3 + 7}s}`,
+            }}
+          />
+        ))}
         
-        {/* Floating X and O symbols */}
-        <div className="absolute inset-0">
-          {/* X symbols */}
-          {[...Array(5)].map((_, i) => (
+        {/* Grid Patterns */}
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={`grid-${i}`}
+            className="grid-pattern"
+            style={{
+              width: `${Math.random() * 40 + 40}px`,
+              height: `${Math.random() * 40 + 40}px`,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 10}s}`,
+              animationDuration: `${Math.random() * 5 + 10}s}`,
+            }}
+          />
+        ))}
+        
+        {/* Mathematical Symbols */}
+        {[...Array(15)].map((_, i) => {
+          const symbols = ['+', '-', '×', '÷', '=', '≠', '≤', '≥', '∑', '∏', '∫', '√', '∞'];
+          const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+          return (
             <div
-              key={`x-${i}`}
-              className="absolute opacity-15"
+              key={`math-${i}`}
+              className="math-symbol"
               style={{
                 top: `${Math.random() * 100}%`,
                 left: `${Math.random() * 100}%`,
-                animation: `float ${Math.random() * 20 + 15}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 10}s`,
+                fontSize: `${Math.random() * 20 + 15}px`,
+                animationDelay: `${Math.random() * 10}s}`,
               }}
             >
-              <div className="w-12 h-12 flex items-center justify-center">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
+              {symbol}
             </div>
-          ))}
+          );
+        })}
+        
+        {/* Win Lines */}
+        {[...Array(5)].map((_, i) => (
+          <div
+            key={`win-${i}`}
+            className="win-line"
+            style={{
+              width: `${Math.random() * 100 + 50}px`,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              transform: `rotate(${Math.random() * 360}deg)`,
+              animationDelay: `${Math.random() * 6}s}`,
+              animationDuration: `${Math.random() * 3 + 6}s}`,
+            }}
+          />
+        ))}
+        
+        {/* Strategy Boards */}
+        {[...Array(4)].map((_, i) => (
+          <div
+            key={`strategy-${i}`}
+            className="strategy-board"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 20}s}`,
+              animationDuration: `${Math.random() * 10 + 20}s}`,
+            }}
+          >
+            {[...Array(9)].map((_, j) => (
+              <div key={j} className="tic-tac-toe-cell" />
+            ))}
+          </div>
+        ))}
+        
+        {/* Geometric Shapes */}
+        {[...Array(12)].map((_, i) => {
+          const shapes = ['square', 'circle', 'triangle'];
+          const shape = shapes[Math.floor(Math.random() * shapes.length)];
           
-          {/* O symbols */}
-          {[...Array(5)].map((_, i) => (
+          let shapeStyle = {};
+          if (shape === 'square') {
+            shapeStyle = {
+              width: `${Math.random() * 30 + 20}px`,
+              height: `${Math.random() * 30 + 20}px`,
+              backgroundColor: 'rgba(251, 191, 36, 0.1)',
+              borderRadius: '2px',
+            };
+          } else if (shape === 'circle') {
+            shapeStyle = {
+              width: `${Math.random() * 30 + 20}px`,
+              height: `${Math.random() * 30 + 20}px`,
+              backgroundColor: 'rgba(251, 191, 36, 0.1)',
+              borderRadius: '50%',
+            };
+          } else {
+            shapeStyle = {
+              width: 0,
+              height: 0,
+              borderLeft: `${Math.random() * 15 + 10}px solid transparent`,
+              borderRight: `${Math.random() * 15 + 10}px solid transparent`,
+              borderBottom: `${Math.random() * 20 + 15}px solid rgba(251, 191, 36, 0.1)`,
+            };
+          }
+          
+          return (
             <div
-              key={`o-${i}`}
-              className="absolute opacity-15"
+              key={`shape-${i}`}
+              className="geometric-shape"
               style={{
+                ...shapeStyle,
                 top: `${Math.random() * 100}%`,
                 left: `${Math.random() * 100}%`,
-                animation: `float ${Math.random() * 20 + 15}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 10}s`,
-              }}
-            >
-              <div className="w-12 h-12 flex items-center justify-center">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-                </svg>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        {/* Mathematical/geometric elements */}
-        <div className="absolute inset-0">
-          {[...Array(8)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute opacity-10"
-              style={{
-                width: `${Math.random() * 30 + 20}px`,
-                height: `${Math.random() * 30 + 20}px`,
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                border: "1px solid rgba(255,255,255,0.2)",
-                borderRadius: Math.random() > 0.5 ? "0" : "50%",
-                animation: `float ${Math.random() * 25 + 20}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 15}s`,
+                animationDelay: `${Math.random() * 15}s}`,
+                animationDuration: `${Math.random() * 10 + 15}s}`,
               }}
             />
-          ))}
-        </div>
+          );
+        })}
         
-        {/* Grid zones */}
-        <div className="absolute top-20 left-20 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-20 right-20 w-40 h-40 bg-orange-500/10 rounded-full blur-3xl animate-float animation-delay-4000"></div>
-        <div className="absolute top-1/2 left-1/3 w-36 h-36 bg-yellow-500/10 rounded-full blur-3xl animate-float animation-delay-2000"></div>
+        {/* Game Zones */}
+        <div 
+          className="game-zone"
+          style={{
+            width: '300px',
+            height: '300px',
+            top: '10%',
+            left: '10%',
+            backgroundColor: 'rgba(251, 191, 36, 0.05)',
+            animation: 'float 15s ease-in-out infinite',
+          }}
+        />
+        <div 
+          className="game-zone"
+          style={{
+            width: '250px',
+            height: '250px',
+            bottom: '15%',
+            right: '15%',
+            backgroundColor: 'rgba(217, 119, 6, 0.05)',
+            animation: 'floatReverse 12s ease-in-out infinite',
+          }}
+        />
+        <div 
+          className="game-zone"
+          style={{
+            width: '200px',
+            height: '200px',
+            top: '50%',
+            left: '60%',
+            backgroundColor: 'rgba(180, 83, 9, 0.05)',
+            animation: 'float 18s ease-in-out infinite',
+            animationDelay: '3s',
+          }}
+        />
       </div>
       
       {/* Main content */}
@@ -249,7 +555,7 @@ export default function TicTacToePage() {
             </div>
             <div className="flex items-start">
               <span className="text-amber-400 mr-2">🏆</span>
-              <span>Win more rounds to win the match</span>
+              <span>Win more rounds to win match</span>
             </div>
           </div>
         </div>
