@@ -1,10 +1,9 @@
 // src/games/asteroids.js
-export function initAsteroids() {
+export function initAsteroids({ onScoreSaved } = {}) {
   const canvas = document.getElementById("asteroids-canvas");
   const statusEl = document.getElementById("asteroids-status");
-  const leaderboardBody = document.querySelector("#asteroids-leaderboard tbody");
 
-  if (!canvas || !statusEl || !leaderboardBody) return;
+  if (!canvas || !statusEl) return;
 
   const ctx = canvas.getContext("2d");
   const width = canvas.width;
@@ -19,6 +18,7 @@ export function initAsteroids() {
   let running = false;
   let loopId;
   let score = 0;
+  let destroyed = false;
 
   const SHIP_RADIUS = 10;
   const SHIP_TURN_SPEED = 0.08;
@@ -32,30 +32,9 @@ export function initAsteroids() {
   const BULLET_SPEED = 4.0;
   const BULLET_LIFETIME = 60; // frames
 
-  // ---- leaderboard loader ----
-  function loadLeaderboard() {
-    fetch(
-      "http://localhost:5000/api/scores/leaderboard?game=asteroids&limit=10"
-    )
-      .then((res) => res.json())
-      .then((rows) => {
-        leaderboardBody.innerHTML = "";
-        rows.forEach((row, index) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${index + 1}. ${row.username}</td>
-            <td style="text-align:right;">${row.value}</td>
-          `;
-          leaderboardBody.appendChild(tr);
-        });
-      })
-      .catch((err) =>
-        console.error("Error loading asteroids leaderboard:", err)
-      );
-  }
-
-  // ---- shared submitScore for this game ----
   function submitScore(scoreValue) {
+    if (destroyed) return;
+
     if (typeof window.getPlayerInfo !== "function") {
       console.error("getPlayerInfo is not available");
       return;
@@ -83,7 +62,9 @@ export function initAsteroids() {
       .then((res) => res.json())
       .then((data) => {
         console.log("Asteroids score saved:", data);
-        loadLeaderboard();
+        if (typeof onScoreSaved === "function" && !destroyed) {
+          onScoreSaved();
+        }
       })
       .catch((err) => {
         console.error("Error saving asteroids score:", err);
@@ -97,7 +78,7 @@ export function initAsteroids() {
         x: Math.random() * width,
         y: Math.random() * height,
         size: Math.random() * 2,
-        brightness: Math.random()
+        brightness: Math.random(),
       });
     }
   }
@@ -112,12 +93,12 @@ export function initAsteroids() {
       const angle = (Math.PI * 2 * i) / particleCount;
       const speed = 1 + Math.random() * 2;
       particles.push({
-        x: x,
-        y: y,
+        x,
+        y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         life: 30 + Math.random() * 20,
-        color: `hsl(${20 + Math.random() * 40}, 100%, ${50 + Math.random() * 30}%)`
+        color: `hsl(${20 + Math.random() * 40},100%,${50 + Math.random() * 30}%)`,
       });
     }
   }
@@ -131,33 +112,8 @@ export function initAsteroids() {
       vx: ship.vx + cos * (0.5 + Math.random()),
       vy: ship.vy + sin * (0.5 + Math.random()),
       life: 10 + Math.random() * 10,
-      color: `hsl(${180 + Math.random() * 40}, 100%, ${50 + Math.random() * 30}%)`
+      color: `hsl(${180 + Math.random() * 40},100%,${50 + Math.random() * 30}%)`,
     });
-  }
-
-  function resetGame() {
-    ship = {
-      x: width / 2,
-      y: height / 2,
-      vx: 0,
-      vy: 0,
-      angle: -Math.PI / 2,
-      dead: false,
-      thrusting: false
-    };
-    bullets = [];
-    asteroids = [];
-    particles = [];
-    score = 0;
-
-    for (let i = 0; i < AST_START; i++) {
-      asteroids.push(createAsteroid());
-    }
-
-    running = true;
-    statusEl.textContent =
-      "Arrow keys to turn/thrust, Space to shoot. Avoid collisions.";
-    loop();
   }
 
   function createAsteroid() {
@@ -177,19 +133,15 @@ export function initAsteroids() {
       y = height;
     }
     const angle = Math.random() * Math.PI * 2;
-    
-    // Create asteroid shape with random vertices
+
     const vertices = [];
     const vertexCount = 8 + Math.floor(Math.random() * 5);
     for (let i = 0; i < vertexCount; i++) {
-      const angle = (Math.PI * 2 * i) / vertexCount;
+      const a = (Math.PI * 2 * i) / vertexCount;
       const variance = 0.8 + Math.random() * 0.4;
-      vertices.push({
-        x: Math.cos(angle) * variance,
-        y: Math.sin(angle) * variance
-      });
+      vertices.push({ x: Math.cos(a) * variance, y: Math.sin(a) * variance });
     }
-    
+
     return {
       x,
       y,
@@ -198,8 +150,33 @@ export function initAsteroids() {
       r: AST_RADIUS,
       vertices,
       rotation: 0,
-      rotationSpeed: (Math.random() - 0.5) * 0.05
+      rotationSpeed: (Math.random() - 0.5) * 0.05,
     };
+  }
+
+  function resetGame() {
+    ship = {
+      x: width / 2,
+      y: height / 2,
+      vx: 0,
+      vy: 0,
+      angle: -Math.PI / 2,
+      dead: false,
+      thrusting: false,
+    };
+    bullets = [];
+    asteroids = [];
+    particles = [];
+    score = 0;
+
+    for (let i = 0; i < AST_START; i++) {
+      asteroids.push(createAsteroid());
+    }
+
+    running = true;
+    statusEl.textContent =
+      "Arrow keys to turn/thrust, Space to shoot. Avoid collisions.";
+    loop();
   }
 
   function fireBullet() {
@@ -218,20 +195,15 @@ export function initAsteroids() {
   function update() {
     if (!running) return;
 
-    // ship controls
     if (keys["ArrowLeft"]) ship.angle -= SHIP_TURN_SPEED;
     if (keys["ArrowRight"]) ship.angle += SHIP_TURN_SPEED;
-    
+
     ship.thrusting = false;
     if (keys["ArrowUp"]) {
       ship.vx += Math.cos(ship.angle) * SHIP_THRUST;
       ship.vy += Math.sin(ship.angle) * SHIP_THRUST;
       ship.thrusting = true;
-      
-      // Create thrust particles
-      if (Math.random() > 0.3) {
-        createThrustParticle();
-      }
+      if (Math.random() > 0.3) createThrustParticle();
     }
 
     ship.vx *= FRICTION;
@@ -239,13 +211,11 @@ export function initAsteroids() {
     ship.x += ship.vx;
     ship.y += ship.vy;
 
-    // screen wrap
     if (ship.x < 0) ship.x = width;
     if (ship.x > width) ship.x = 0;
     if (ship.y < 0) ship.y = height;
     if (ship.y > height) ship.y = 0;
 
-    // update asteroids
     asteroids.forEach((a) => {
       a.x += a.vx;
       a.y += a.vy;
@@ -256,17 +226,20 @@ export function initAsteroids() {
       if (a.y > height + a.r) a.y = -a.r;
     });
 
-    // update bullets
     bullets.forEach((b) => {
       b.x += b.vx;
       b.y += b.vy;
       b.life--;
     });
     bullets = bullets.filter(
-      (b) => b.life > 0 && b.x >= 0 && b.x <= width && b.y >= 0 && b.y <= height
+      (b) =>
+        b.life > 0 &&
+        b.x >= 0 &&
+        b.x <= width &&
+        b.y >= 0 &&
+        b.y <= height
     );
 
-    // update particles
     particles.forEach((p) => {
       p.x += p.vx;
       p.y += p.vy;
@@ -274,9 +247,8 @@ export function initAsteroids() {
       p.vy *= 0.98;
       p.life--;
     });
-    particles = particles.filter(p => p.life > 0);
+    particles = particles.filter((p) => p.life > 0);
 
-    // bullet-asteroid collisions
     for (let i = asteroids.length - 1; i >= 0; i--) {
       const a = asteroids[i];
       for (let j = bullets.length - 1; j >= 0; j--) {
@@ -285,14 +257,12 @@ export function initAsteroids() {
         const dy = a.y - b.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < a.r) {
-          // hit
           createExplosion(a.x, a.y, a.r);
           asteroids.splice(i, 1);
           bullets.splice(j, 1);
           score += 10;
-          // split asteroid if large enough
           if (a.r > 10) {
-            const newAsteroid1 = {
+            const child1 = {
               x: a.x,
               y: a.y,
               vx: a.vx + (Math.random() - 0.5) * 1.2,
@@ -300,26 +270,16 @@ export function initAsteroids() {
               r: a.r * 0.6,
               vertices: [...a.vertices],
               rotation: 0,
-              rotationSpeed: (Math.random() - 0.5) * 0.05
+              rotationSpeed: (Math.random() - 0.5) * 0.05,
             };
-            const newAsteroid2 = {
-              x: a.x,
-              y: a.y,
-              vx: a.vx + (Math.random() - 0.5) * 1.2,
-              vy: a.vy + (Math.random() - 0.5) * 1.2,
-              r: a.r * 0.6,
-              vertices: [...a.vertices],
-              rotation: 0,
-              rotationSpeed: (Math.random() - 0.5) * 0.05
-            };
-            asteroids.push(newAsteroid1, newAsteroid2);
+            const child2 = { ...child1 };
+            asteroids.push(child1, child2);
           }
           break;
         }
       }
     }
 
-    // ship-asteroid collisions
     for (const a of asteroids) {
       const dx = a.x - ship.x;
       const dy = a.y - ship.y;
@@ -334,7 +294,6 @@ export function initAsteroids() {
       }
     }
 
-    // win condition (cleared all asteroids)
     if (asteroids.length === 0) {
       running = false;
       statusEl.textContent = `Sector cleared! Score: ${score}. Press Enter to play again.`;
@@ -346,13 +305,11 @@ export function initAsteroids() {
   }
 
   function draw() {
-    // Draw space background
     ctx.fillStyle = "#020617";
     ctx.fillRect(0, 0, width, height);
-    
-    // Draw stars
+
     ctx.fillStyle = "#ffffff";
-    stars.forEach(star => {
+    stars.forEach((star) => {
       ctx.globalAlpha = 0.3 + star.brightness * 0.7;
       ctx.beginPath();
       ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
@@ -360,8 +317,7 @@ export function initAsteroids() {
     });
     ctx.globalAlpha = 1;
 
-    // Draw particles
-    particles.forEach(p => {
+    particles.forEach((p) => {
       ctx.globalAlpha = p.life / 40;
       ctx.fillStyle = p.color;
       ctx.beginPath();
@@ -370,7 +326,6 @@ export function initAsteroids() {
     });
     ctx.globalAlpha = 1;
 
-    // Draw bullets
     ctx.strokeStyle = "#e5e7eb";
     ctx.lineWidth = 3;
     ctx.shadowBlur = 5;
@@ -383,7 +338,6 @@ export function initAsteroids() {
     });
     ctx.shadowBlur = 0;
 
-    // Draw asteroids
     ctx.strokeStyle = "#f97316";
     ctx.lineWidth = 2;
     asteroids.forEach((a) => {
@@ -392,24 +346,20 @@ export function initAsteroids() {
       ctx.rotate(a.rotation);
       ctx.beginPath();
       a.vertices.forEach((v, i) => {
-        if (i === 0) {
-          ctx.moveTo(v.x * a.r, v.y * a.r);
-        } else {
-          ctx.lineTo(v.x * a.r, v.y * a.r);
-        }
+        const vx = v.x * a.r;
+        const vy = v.y * a.r;
+        if (i === 0) ctx.moveTo(vx, vy);
+        else ctx.lineTo(vx, vy);
       });
       ctx.closePath();
       ctx.stroke();
       ctx.restore();
     });
 
-    // Draw ship
     if (!ship.dead) {
       ctx.save();
       ctx.translate(ship.x, ship.y);
       ctx.rotate(ship.angle);
-      
-      // Ship body
       ctx.strokeStyle = "#38bdf8";
       ctx.lineWidth = 2;
       ctx.shadowBlur = 10;
@@ -421,8 +371,6 @@ export function initAsteroids() {
       ctx.lineTo(-SHIP_RADIUS, SHIP_RADIUS * 0.6);
       ctx.closePath();
       ctx.stroke();
-      
-      // Thrust flame
       if (ship.thrusting) {
         ctx.strokeStyle = "#fbbf24";
         ctx.shadowColor = "#fbbf24";
@@ -432,12 +380,10 @@ export function initAsteroids() {
         ctx.lineTo(-SHIP_RADIUS * 0.5, SHIP_RADIUS * 0.3);
         ctx.stroke();
       }
-      
       ctx.restore();
       ctx.shadowBlur = 0;
     }
 
-    // Score
     ctx.fillStyle = "#e5e7eb";
     ctx.font = "bold 16px system-ui, -apple-system, BlinkMacSystemFont";
     ctx.textAlign = "left";
@@ -465,14 +411,12 @@ export function initAsteroids() {
     keys[e.key] = false;
   }
 
-  // cleanup old listeners
   document.removeEventListener("keydown", handleKeyDown);
   document.removeEventListener("keyup", handleKeyUp);
 
   document.addEventListener("keydown", handleKeyDown);
   document.addEventListener("keyup", handleKeyUp);
 
-  // initial idle screen
   initStars();
   initParticles();
   running = false;
@@ -484,7 +428,7 @@ export function initAsteroids() {
     vy: 0,
     angle: -Math.PI / 2,
     dead: false,
-    thrusting: false
+    thrusting: false,
   };
   bullets = [];
   asteroids = [];
@@ -494,5 +438,12 @@ export function initAsteroids() {
   statusEl.textContent =
     "Press Enter to start. Arrows to move, Space to shoot.";
   draw();
-  loadLeaderboard();
+
+  // optional cleanup
+  return () => {
+    destroyed = true;
+    document.removeEventListener("keydown", handleKeyDown);
+    document.removeEventListener("keyup", handleKeyUp);
+    if (loopId) cancelAnimationFrame(loopId);
+  };
 }

@@ -32,7 +32,6 @@ export function initRps({ onScoreSaved } = {}) {
     return;
   }
 
-  // Create battle area if it doesn't exist
   function createBattleArea() {
     const ba = document.createElement("div");
     ba.id = "rps-battle-area";
@@ -52,250 +51,165 @@ export function initRps({ onScoreSaved } = {}) {
   let matchActive = false;
   let isAnimating = false;
 
-  // Add custom styles for the game (tweaked for visibility)
   const rpsStyles = `
-    <style id="rps-styles">
-      .rps-choice-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 150px;
-        position: relative;
-      }
-
-      .rps-choice-display {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: linear-gradient(145deg, #f3f4f6, #e5e7eb);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-                    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-      }
-
-      .rps-choice-display.winner {
-        animation: pulse 1s infinite;
-        box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
-      }
-
-      .rps-choice-display.loser {
-        opacity: 0.7;
-        transform: scale(0.9);
-      }
-
-      @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
-      }
-
-      .rps-choice-icon {
-        width: 80px;
-        height: 80px;
-        position: relative;
-      }
-
-      .rps-vs {
-        font-size: 2rem;
-        font-weight: bold;
-        color: #e5e7eb;
-        z-index: 2;
-      }
-
-      .rps-choice-btn {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: linear-gradient(145deg, #ffffff, #f3f4f6);
-        border: 2px solid #d1d5db;
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        transition: all 0.2s ease;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-                    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      }
-
-      .rps-choice-btn:hover:not(:disabled) {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-                    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-      }
-
-      .rps-choice-btn:active:not(:disabled) {
-        transform: translateY(-2px);
-      }
-
-      .rps-choice-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .rps-choice-btn.selected {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
-      }
-
-      .rps-result-message {
-        font-size: 1.1rem;
-        font-weight: 600;
-        text-align: center;
-        padding: 8px 16px;
-        border-radius: 8px;
-        margin: 4px 0;
-      }
-
-      .rps-result-message.win {
-        background-color: rgba(34, 197, 94, 0.12);
-        color: #bbf7d0;
-      }
-
-      .rps-result-message.lose {
-        background-color: rgba(239, 68, 68, 0.12);
-        color: #fecaca;
-      }
-
-      .rps-result-message.tie {
-        background-color: rgba(245, 158, 11, 0.12);
-        color: #fed7aa;
-      }
-
-      #rps-status {
-        background: linear-gradient(to right, #1e293b, #334155);
-        color: white;
-        padding: 10px 15px;
-        border-radius: 8px;
-        margin: 15px 0;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      }
-
-      .status-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .status-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .status-icon {
-        font-size: 18px;
-      }
-
-      /* RESULT BOX: bright background so text is visible on dark card */
-      #rps-result {
-        background: #ffffff;
-        padding: 15px;
-        border-radius: 8px;
-        margin: 15px 0 0 0;
-        text-align: center;
-        font-weight: 500;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.25);
-        min-height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #020617;
-      }
-
-      .control-buttons {
-        display: flex;
-        gap: 10px;
-        margin: 15px 0;
-      }
-
-      .control-button {
-        padding: 8px 16px;
-        border-radius: 6px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border: none;
-      }
-
-      #rps-start-match-btn {
-        background: linear-gradient(145deg, #10b981, #059669);
-        color: white;
-      }
-
-      #rps-start-match-btn:hover {
-        background: linear-gradient(145deg, #059669, #047857);
-        transform: translateY(-1px);
-      }
-
-      #rps-reset-match-btn {
-        background: linear-gradient(145deg, #ef4444, #dc2626);
-        color: white;
-      }
-
-      #rps-reset-match-btn:hover {
-        background: linear-gradient(145deg, #dc2626, #b91c1c);
-        transform: translateY(-1px);
-      }
-
-      .round-selector {
-        margin: 15px 0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      /* ROUNDS SELECTOR: explicit white background + dark text */
-      #rps-rounds-select {
-        padding: 8px 12px;
-        border-radius: 6px;
-        border: 1px solid #d1d5db;
-        background-color: #ffffff;
-        color: #111827;
-      }
-
-      .countdown {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 3rem;
-        font-weight: bold;
-        color: #3b82f6;
-        z-index: 10;
-        animation: countdown 1s ease-out forwards;
-      }
-
-      @keyframes countdown {
-        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
-        50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-        100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
-      }
-
-      .shake {
-        animation: shake 0.5s;
-      }
-
-      @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-        20%, 40%, 60%, 80% { transform: translateX(5px); }
-      }
-    </style>
+    .rps-choice-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 150px;
+      position: relative;
+    }
+    .rps-choice-display {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(145deg,#f3f4f6,#e5e7eb);
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1),
+                  0 4px 6px -2px rgba(0,0,0,0.05);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .rps-choice-display.winner {
+      animation: pulse 1s infinite;
+      box-shadow: 0 0 20px rgba(34,197,94,0.5);
+    }
+    .rps-choice-display.loser {
+      opacity: 0.7;
+      transform: scale(0.9);
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    .rps-choice-icon {
+      width: 80px;
+      height: 80px;
+      position: relative;
+    }
+    .rps-vs {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #e5e7eb;
+      z-index: 2;
+    }
+    .rps-choice-btn {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(145deg,#ffffff,#f3f4f6);
+      border: 2px solid #d1d5db;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1),
+                  0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+    .rps-choice-btn:hover:not(:disabled) {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1),
+                  0 4px 6px -2px rgba(0,0,0,0.05);
+    }
+    .rps-choice-btn:active:not(:disabled) {
+      transform: translateY(-2px);
+    }
+    .rps-choice-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .rps-choice-btn.selected {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.3);
+    }
+    .rps-result-message {
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-align: center;
+      padding: 8px 16px;
+      border-radius: 8px;
+      margin: 4px 0;
+    }
+    .rps-result-message.win {
+      background-color: rgba(34,197,94,0.12);
+      color: #bbf7d0;
+    }
+    .rps-result-message.lose {
+      background-color: rgba(239,68,68,0.12);
+      color: #fecaca;
+    }
+    .rps-result-message.tie {
+      background-color: rgba(245,158,11,0.12);
+      color: #fed7aa;
+    }
+    #rps-status {
+      background: linear-gradient(to right,#1e293b,#334155);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .status-info { display:flex;justify-content:space-between;align-items:center; }
+    .status-item { display:flex;align-items:center;gap:8px; }
+    .status-icon { font-size:18px; }
+    #rps-result {
+      background:#ffffff;
+      padding:15px;
+      border-radius:8px;
+      margin:15px 0 0 0;
+      text-align:center;
+      font-weight:500;
+      box-shadow:0 4px 8px rgba(0,0,0,0.25);
+      min-height:60px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#020617;
+    }
+    #rps-rounds-select {
+      padding:8px 12px;
+      border-radius:6px;
+      border:1px solid #d1d5db;
+      background-color:#ffffff;
+      color:#111827;
+    }
+    .countdown {
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      font-size:3rem;
+      font-weight:bold;
+      color:#3b82f6;
+      z-index:10;
+      animation:countdown 1s ease-out forwards;
+    }
+    @keyframes countdown {
+      0% { transform:translate(-50%,-50%) scale(0.5); opacity:0; }
+      50% { transform:translate(-50%,-50%) scale(1.2); opacity:1; }
+      100% { transform:translate(-50%,-50%) scale(1); opacity:0; }
+    }
+    .shake { animation: shake 0.5s; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      10%,30%,50%,70%,90% { transform: translateX(-5px); }
+      20%,40%,60%,80% { transform: translateX(5px); }
+    }
   `;
 
   if (!document.getElementById("rps-styles")) {
-    const styleElement = document.createElement("div");
+    const styleElement = document.createElement("style");
     styleElement.id = "rps-styles";
-    styleElement.innerHTML = rpsStyles;
+    styleElement.textContent = rpsStyles;
     document.head.appendChild(styleElement);
   }
 
-  // --- icons ---
   function createChoiceIcon(choice) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("viewBox", "0 0 100 100");
@@ -375,7 +289,8 @@ export function initRps({ onScoreSaved } = {}) {
         countdownEl.textContent = count;
         countdownEl.style.animation = "none";
         setTimeout(() => {
-          countdownEl.style.animation = "countdown 1s ease-out forwards";
+          countdownEl.style.animation =
+            "countdown 1s ease-out forwards";
         }, 10);
       } else {
         clearInterval(interval);
@@ -387,27 +302,6 @@ export function initRps({ onScoreSaved } = {}) {
     }, 1000);
   }
 
-  function loadRpsLeaderboard() {
-    fetch("http://localhost:5000/api/scores/leaderboard?game=rps&limit=10")
-      .then((res) => res.json())
-      .then((rows) => {
-        const tbody = document.querySelector("#rps-leaderboard tbody");
-        if (!tbody) return;
-        tbody.innerHTML = "";
-        rows.forEach((row, index) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${index + 1}. ${row.username}</td>
-            <td style="text-align:right;">${row.value}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      })
-      .catch((err) => {
-        console.error("Error loading RPS leaderboard:", err);
-      });
-  }
-
   function submitScore(scoreValue, resultText) {
     if (typeof window.getPlayerInfo !== "function") {
       console.error("getPlayerInfo is not available");
@@ -415,7 +309,6 @@ export function initRps({ onScoreSaved } = {}) {
     }
 
     const player = window.getPlayerInfo();
-
     if (!player || !player.name) {
       console.error("Invalid player info", player);
       return;
@@ -439,8 +332,6 @@ export function initRps({ onScoreSaved } = {}) {
         console.log("RPS result saved:", data, "=>", resultText);
         if (typeof onScoreSaved === "function") {
           onScoreSaved();
-        } else {
-          loadRpsLeaderboard();
         }
       })
       .catch((err) => {
@@ -459,16 +350,9 @@ export function initRps({ onScoreSaved } = {}) {
       (myChoice === PAPER && computerChoice === ROCK);
 
     if (isWin) {
-      return {
-        message: "You win this round!",
-        score: 1,
-      };
+      return { message: "You win this round!", score: 1 };
     }
-
-    return {
-      message: "You lose this round.",
-      score: -1,
-    };
+    return { message: "You lose this round.", score: -1 };
   }
 
   function updateStatusText() {
@@ -613,7 +497,7 @@ export function initRps({ onScoreSaved } = {}) {
     });
   }
 
-  // clean old listeners in case of re-mount
+  // clean old listeners by cloning buttons
   startMatchBtn.replaceWith(startMatchBtn.cloneNode(true));
   const freshStartMatchBtn = document.getElementById("rps-start-match-btn");
 
@@ -638,5 +522,4 @@ export function initRps({ onScoreSaved } = {}) {
   });
 
   resetMatchState();
-  loadRpsLeaderboard();
 }

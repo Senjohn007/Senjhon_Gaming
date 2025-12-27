@@ -1,10 +1,27 @@
 // src/pages/RpsPage.jsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { initRps } from "../games/rps";
+import { initUsernameUI } from "../games/username";
 
 export default function RpsPage() {
+  const [scores, setScores] = useState([]);
+
+  const loadLeaderboard = useCallback(() => {
+    fetch("http://localhost:5000/api/scores/leaderboard?game=rps&limit=10")
+      .then((res) => res.json())
+      .then((rows) => setScores(rows))
+      .catch((err) =>
+        console.error("Error loading RPS leaderboard (React):", err)
+      );
+  }, []);
+
   useEffect(() => {
-    // Add custom styles for animations
+    let isMounted = true;
+
+    // ensure window.getPlayerInfo exists
+    initUsernameUI();
+
+    // Add custom styles for animations (same as before)
     const styleId = "rps-animations";
     if (!document.getElementById(styleId)) {
       const style = document.createElement("style");
@@ -14,62 +31,51 @@ export default function RpsPage() {
           0%, 100% { transform: translateY(0) rotate(0deg); }
           50% { transform: translateY(-20px) rotate(5deg); }
         }
-        
         @keyframes floatReverse {
           0%, 100% { transform: translateY(0) rotate(0deg); }
           50% { transform: translateY(-15px) rotate(-5deg); }
         }
-        
         @keyframes gradientShift {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
-        
         @keyframes rockPulse {
           0%, 100% { transform: scale(1); opacity: 0.7; }
           50% { transform: scale(1.1); opacity: 1; }
         }
-        
         @keyframes paperFloat {
           0%, 100% { transform: translateY(0) rotate(0deg); }
           25% { transform: translateY(-10px) rotate(2deg); }
           50% { transform: translateY(-20px) rotate(0deg); }
           75% { transform: translateY(-10px) rotate(-2deg); }
         }
-        
         @keyframes scissorsClash {
           0%, 100% { transform: rotate(0deg); }
           25% { transform: rotate(-15deg); }
           75% { transform: rotate(15deg); }
         }
-        
         @keyframes trophyShine {
           0%, 100% { opacity: 0.3; transform: scale(1); }
           50% { opacity: 0.8; transform: scale(1.05); }
         }
-        
         @keyframes medalSpin {
           0% { transform: rotateY(0deg); }
           100% { transform: rotateY(360deg); }
         }
-        
         @keyframes swordClash {
           0%, 100% { transform: translateX(0) rotate(0deg); }
           50% { transform: translateX(10px) rotate(5deg); }
         }
-        
         @keyframes shieldBlock {
           0%, 100% { transform: scale(1); }
           50% { transform: scale(1.05); }
         }
-        
         @keyframes handClash {
           0% { transform: rotate(0deg); }
           25% { transform: rotate(-10deg); }
           75% { transform: rotate(10deg); }
         }
-        
         .animated-bg {
           position: fixed;
           top: 0;
@@ -82,7 +88,6 @@ export default function RpsPage() {
           background-size: 400% 400%;
           animation: gradientShift 15s ease infinite;
         }
-        
         .rock-symbol {
           position: absolute;
           width: 40px;
@@ -94,7 +99,6 @@ export default function RpsPage() {
           justify-content: center;
           animation: rockPulse 5s ease-in-out infinite;
         }
-        
         .rock-symbol::before {
           content: '';
           position: absolute;
@@ -103,7 +107,6 @@ export default function RpsPage() {
           background: linear-gradient(135deg, #9ca3af, #6b7280);
           border-radius: 50%;
         }
-        
         .paper-symbol {
           position: absolute;
           width: 40px;
@@ -113,7 +116,6 @@ export default function RpsPage() {
           box-shadow: 0 0 5px rgba(0,0,0,0.2);
           animation: paperFloat 8s ease-in-out infinite;
         }
-        
         .paper-symbol::before {
           content: '';
           position: absolute;
@@ -123,7 +125,6 @@ export default function RpsPage() {
           height: 2px;
           background: #cbd5e1;
         }
-        
         .paper-symbol::after {
           content: '';
           position: absolute;
@@ -133,7 +134,6 @@ export default function RpsPage() {
           height: 2px;
           background: #cbd5e1;
         }
-        
         .scissors-symbol {
           position: absolute;
           width: 40px;
@@ -143,7 +143,6 @@ export default function RpsPage() {
           justify-content: center;
           animation: scissorsClash 4s ease-in-out infinite;
         }
-        
         .scissors-symbol::before,
         .scissors-symbol::after {
           content: '';
@@ -153,22 +152,14 @@ export default function RpsPage() {
           background: linear-gradient(to bottom, #ef4444, #dc2626);
           border-radius: 2px;
         }
-        
-        .scissors-symbol::before {
-          transform: rotate(-10deg);
-        }
-        
-        .scissors-symbol::after {
-          transform: rotate(10deg);
-        }
-        
+        .scissors-symbol::before { transform: rotate(-10deg); }
+        .scissors-symbol::after { transform: rotate(10deg); }
         .trophy {
           position: absolute;
           width: 30px;
           height: 40px;
           animation: trophyShine 6s ease-in-out infinite;
         }
-        
         .trophy::before {
           content: '';
           position: absolute;
@@ -177,7 +168,6 @@ export default function RpsPage() {
           background: linear-gradient(to bottom, #fbbf24, #f59e0b);
           border-radius: 15px 15px 5px 5px;
         }
-        
         .trophy::after {
           content: '';
           position: absolute;
@@ -187,7 +177,6 @@ export default function RpsPage() {
           height: 15px;
           background: linear-gradient(to bottom, #fbbf24, #f59e0b);
         }
-        
         .medal {
           position: absolute;
           width: 25px;
@@ -196,7 +185,6 @@ export default function RpsPage() {
           border-radius: 50%;
           animation: medalSpin 8s linear infinite;
         }
-        
         .medal::before {
           content: '1';
           position: absolute;
@@ -206,7 +194,6 @@ export default function RpsPage() {
           color: #713f12;
           font-weight: bold;
         }
-        
         .sword {
           position: absolute;
           width: 3px;
@@ -214,7 +201,6 @@ export default function RpsPage() {
           background: linear-gradient(to bottom, #94a3b8, #64748b);
           animation: swordClash 3s ease-in-out infinite;
         }
-        
         .sword::before {
           content: '';
           position: absolute;
@@ -225,7 +211,6 @@ export default function RpsPage() {
           background: linear-gradient(135deg, #94a3b8, #64748b);
           clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
         }
-        
         .shield {
           position: absolute;
           width: 30px;
@@ -234,14 +219,12 @@ export default function RpsPage() {
           border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
           animation: shieldBlock 5s ease-in-out infinite;
         }
-        
         .hand {
           position: absolute;
           width: 30px;
           height: 30px;
           animation: handClash 4s ease-in-out infinite;
         }
-        
         .hand::before {
           content: '';
           position: absolute;
@@ -250,7 +233,6 @@ export default function RpsPage() {
           background: linear-gradient(to bottom, #f8fafc, #e2e8f0);
           border-radius: 10px 10px 5px 5px;
         }
-        
         .hand::after {
           content: '';
           position: absolute;
@@ -261,7 +243,6 @@ export default function RpsPage() {
           background: #cbd5e1;
           border-radius: 2px;
         }
-        
         .battle-zone {
           position: absolute;
           border-radius: 50%;
@@ -271,16 +252,26 @@ export default function RpsPage() {
       document.head.appendChild(style);
     }
 
-    if (typeof initRps === "function") {
-      initRps();
-    }
-  }, []);
+    // initial leaderboard load
+    loadLeaderboard();
+
+    // init game with callback so React reloads leaderboard after save
+    initRps?.({
+      onScoreSaved: () => {
+        if (!isMounted) return;
+        loadLeaderboard();
+      },
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [loadLeaderboard]);
 
   return (
     <main className="min-h-[calc(100vh-80px)] relative overflow-hidden">
       {/* Animated Background */}
       <div className="animated-bg">
-        {/* Rock Symbols */}
         {[...Array(8)].map((_, i) => (
           <div
             key={`rock-${i}`}
@@ -293,8 +284,7 @@ export default function RpsPage() {
             }}
           />
         ))}
-        
-        {/* Paper Symbols */}
+
         {[...Array(8)].map((_, i) => (
           <div
             key={`paper-${i}`}
@@ -308,8 +298,7 @@ export default function RpsPage() {
             }}
           />
         ))}
-        
-        {/* Scissors Symbols */}
+
         {[...Array(8)].map((_, i) => (
           <div
             key={`scissors-${i}`}
@@ -322,8 +311,7 @@ export default function RpsPage() {
             }}
           />
         ))}
-        
-        {/* Trophies */}
+
         {[...Array(5)].map((_, i) => (
           <div
             key={`trophy-${i}`}
@@ -336,8 +324,7 @@ export default function RpsPage() {
             }}
           />
         ))}
-        
-        {/* Medals */}
+
         {[...Array(6)].map((_, i) => (
           <div
             key={`medal-${i}`}
@@ -350,8 +337,7 @@ export default function RpsPage() {
             }}
           />
         ))}
-        
-        {/* Swords */}
+
         {[...Array(6)].map((_, i) => (
           <div
             key={`sword-${i}`}
@@ -365,8 +351,7 @@ export default function RpsPage() {
             }}
           />
         ))}
-        
-        {/* Shields */}
+
         {[...Array(5)].map((_, i) => (
           <div
             key={`shield-${i}`}
@@ -379,8 +364,7 @@ export default function RpsPage() {
             }}
           />
         ))}
-        
-        {/* Hands */}
+
         {[...Array(6)].map((_, i) => (
           <div
             key={`hand-${i}`}
@@ -394,62 +378,60 @@ export default function RpsPage() {
             }}
           />
         ))}
-        
-        {/* Battle Zones */}
-        <div 
+
+        <div
           className="battle-zone"
           style={{
-            width: '300px',
-            height: '300px',
-            top: '10%',
-            left: '10%',
-            backgroundColor: 'rgba(107, 114, 128, 0.05)',
-            animation: 'float 15s ease-in-out infinite',
+            width: "300px",
+            height: "300px",
+            top: "10%",
+            left: "10%",
+            backgroundColor: "rgba(107, 114, 128, 0.05)",
+            animation: "float 15s ease-in-out infinite",
           }}
         />
-        <div 
+        <div
           className="battle-zone"
           style={{
-            width: '250px',
-            height: '250px',
-            bottom: '15%',
-            right: '15%',
-            backgroundColor: 'rgba(59, 130, 246, 0.05)',
-            animation: 'floatReverse 12s ease-in-out infinite',
+            width: "250px",
+            height: "250px",
+            bottom: "15%",
+            right: "15%",
+            backgroundColor: "rgba(59, 130, 246, 0.05)",
+            animation: "floatReverse 12s ease-in-out infinite",
           }}
         />
-        <div 
+        <div
           className="battle-zone"
           style={{
-            width: '200px',
-            height: '200px',
-            top: '50%',
-            left: '60%',
-            backgroundColor: 'rgba(239, 68, 68, 0.05)',
-            animation: 'float 18s ease-in-out infinite',
-            animationDelay: '3s',
+            width: "200px",
+            height: "200px",
+            top: "50%",
+            left: "60%",
+            backgroundColor: "rgba(239, 68, 68, 0.05)",
+            animation: "float 18s ease-in-out infinite",
+            animationDelay: "3s",
           }}
         />
       </div>
-      
+
       {/* Main content */}
       <div className="relative max-w-4xl mx-auto px-4 py-10">
-        {/* title + description */}
         <div className="mb-6">
           <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-emerald-300 drop-shadow-[0_0_24px_rgba(110,231,183,0.6)]">
             Rock Paper Scissors
           </h2>
           <p className="mt-2 text-sm md:text-base text-slate-300">
-            Choose Rock, Paper, or Scissors and see if you can beat to computer.
+            Choose Rock, Paper, or Scissors and see if you can beat the
+            computer.
           </p>
         </div>
 
         <div className="grid gap-8 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] items-start">
           {/* game panel */}
           <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_20px_50px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5 relative overflow-hidden">
-            {/* Competitive effect at top */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-50"></div>
-            
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-50" />
+
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
                 RPS Match
@@ -541,15 +523,14 @@ export default function RpsPage() {
               <div
                 id="rps-choices"
                 className="mt-2 text-xs sm:text-sm text-slate-300 text-center min-h-[1.25rem]"
-              ></div>
+              />
             </div>
           </div>
 
-          {/* leaderboard */}
+          {/* leaderboard – React controls rows */}
           <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_18px_40px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5 relative overflow-hidden">
-            {/* Competitive effect at top */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-50"></div>
-            
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-50" />
+
             <h3 className="text-lg font-semibold text-slate-50 mb-2">
               Top RPS Scores
             </h3>
@@ -568,15 +549,24 @@ export default function RpsPage() {
                     <th className="py-2 text-right">Score</th>
                   </tr>
                 </thead>
-                <tbody>{/* rows filled by JS */}</tbody>
+                <tbody>
+                  {scores.map((row, index) => (
+                    <tr key={row._id || index}>
+                      <td>{index + 1}. {row.username}</td>
+                      <td className="py-1 text-right">{row.value}</td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
             </div>
           </div>
         </div>
-        
+
         {/* Game instructions */}
         <div className="mt-8 rounded-xl bg-slate-900/50 border border-slate-800/50 p-4">
-          <h4 className="text-sm font-medium text-slate-300 mb-2">How to Play</h4>
+          <h4 className="text-sm font-medium text-slate-300 mb-2">
+            How to Play
+          </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-400">
             <div className="flex items-start">
               <span className="text-emerald-400 mr-2">🗻</span>
