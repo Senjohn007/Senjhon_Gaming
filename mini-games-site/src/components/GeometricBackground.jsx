@@ -5,12 +5,29 @@ export default function GeometricBackground() {
   const canvasRef = useRef(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
+  // Throttled mouse tracking (1 update per animation frame)
   useEffect(() => {
+    let rafId = null;
+    let lastEvent = null;
+
     const handleMouseMove = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
+      lastEvent = e;
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        if (!lastEvent) return;
+        setMousePosition({
+          x: lastEvent.clientX,
+          y: lastEvent.clientY,
+        });
+      });
     };
+
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   useEffect(() => {
@@ -55,7 +72,7 @@ export default function GeometricBackground() {
       }
 
       update() {
-        // Store previous position for trail effect
+        // Trail
         this.trail.push({ x: this.x, y: this.y, rotation: this.rotation });
         if (this.trail.length > this.maxTrailLength) {
           this.trail.shift();
@@ -65,25 +82,26 @@ export default function GeometricBackground() {
         this.y += this.speedY;
         this.rotation += this.rotationSpeed;
 
-        // Wrap around edges
+        // Wrap edges
         if (this.x > canvas.width + this.size) this.x = -this.size;
         if (this.x < -this.size) this.x = canvas.width + this.size;
         if (this.y > canvas.height + this.size) this.y = -this.size;
         if (this.y < -this.size) this.y = canvas.height + this.size;
 
-        // Mouse interaction
+        // Mouse interaction (reduced radius & effect to avoid harsh shimmer)
         const dx = mousePosition.x - this.x;
         const dy = mousePosition.y - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance < 150) {
-          const force = (150 - distance) / 150;
-          this.rotationSpeed += force * 0.001;
+
+        const radius = 120;
+        if (distance < radius) {
+          const force = (radius - distance) / radius;
+          this.rotationSpeed += force * 0.0005;
         }
       }
 
       draw() {
-        // Draw trail
+        // Trail
         this.trail.forEach((point, index) => {
           const trailOpacity = (index / this.trail.length) * this.opacity * 0.5;
           ctx.save();
@@ -92,42 +110,36 @@ export default function GeometricBackground() {
           ctx.strokeStyle = `rgba(${this.color}, ${trailOpacity})`;
           ctx.lineWidth = 0.5;
           ctx.beginPath();
-          
+
           for (let i = 0; i < this.sides; i++) {
             const angle = (i / this.sides) * Math.PI * 2;
             const x = Math.cos(angle) * this.size;
             const y = Math.sin(angle) * this.size;
-            if (i === 0) {
-              ctx.moveTo(x, y);
-            } else {
-              ctx.lineTo(x, y);
-            }
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
           }
-          
+
           ctx.closePath();
           ctx.stroke();
           ctx.restore();
         });
 
-        // Draw main shape
+        // Main shape
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(this.rotation);
         ctx.strokeStyle = `rgba(${this.color}, ${this.opacity})`;
         ctx.lineWidth = 1;
         ctx.beginPath();
-        
+
         for (let i = 0; i < this.sides; i++) {
           const angle = (i / this.sides) * Math.PI * 2;
           const x = Math.cos(angle) * this.size;
           const y = Math.sin(angle) * this.size;
-          if (i === 0) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
-          }
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
         }
-        
+
         ctx.closePath();
         ctx.stroke();
         ctx.restore();
@@ -140,15 +152,15 @@ export default function GeometricBackground() {
     }
 
     const animate = () => {
-      // Clear canvas completely with a dark semi-transparent layer
+      // Fill with dark bg (no transparent clear flicker)
       ctx.fillStyle = "rgba(15, 23, 42, 0.8)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      shapes.forEach(shape => {
+
+      shapes.forEach((shape) => {
         shape.update();
         shape.draw();
       });
-      
+
       animationFrameId = requestAnimationFrame(animate);
     };
 
@@ -163,7 +175,11 @@ export default function GeometricBackground() {
   return (
     <div className="fixed inset-0 -z-30 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950" />
-      <canvas ref={canvasRef} className="absolute inset-0" />
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0"
+        style={{ willChange: "transform, opacity" }}
+      />
       <div className="absolute inset-0 bg-radial-gradient from-transparent via-slate-950/20 to-slate-950/60" />
     </div>
   );

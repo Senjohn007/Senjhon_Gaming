@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* src/index.css (after @tailwind directives) */
+/* ================= Base: Scrollbars =================== */
 @layer base {
   /* All scrollbars */
   * {
@@ -37,22 +37,22 @@
   }
 }
 
-/* Add to your index.css */
+/* ================= Utilities: Animations & Scrollbar hide =================== */
 @layer utilities {
   .animation-delay-2000 {
     animation-delay: 2s;
   }
-  
+
   .animation-delay-4000 {
     animation-delay: 4s;
   }
-  
+
   @keyframes slide-down {
     to {
       transform: translateY(100%);
     }
   }
-  
+
   @keyframes shimmer {
     0% {
       transform: translateX(-100%) rotate(45deg);
@@ -61,47 +61,21 @@
       transform: translateX(200%) rotate(45deg);
     }
   }
-  
+
   .animate-slide-down {
     animation: slide-down 1.5s ease-in-out infinite;
   }
-  
+
   .animate-shimmer {
     animation: shimmer 2s infinite;
   }
-}
 
-/* Add to your index.css */
-@layer utilities {
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* Internet Explorer 10+ */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;  /* IE 10+ */
+    scrollbar-width: none;     /* Firefox */
   }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Safari and Chrome */
-  }
-  
-  @keyframes shimmer {
-    0% {
-      transform: translateX(-100%) rotate(45deg);
-    }
-    100% {
-      transform: translateX(200%) rotate(45deg);
-    }
-  }
-  
-  .animate-shimmer {
-    animation: shimmer 2s infinite;
-  }
-}
 
-/* Add to your index.css */
-@layer utilities {
-  .animation-delay-2000 {
-    animation-delay: 2s;
-  }
-  
-  .animation-delay-4000 {
-    animation-delay: 4s;
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;             /* Safari and Chrome */
   }
 }
