@@ -1,10 +1,24 @@
 // src/pages/HangmanPage.jsx
-import React, { useEffect } from "react";
-import { initHangman } from "../games/hangman";
+import React, { useEffect, useState, useCallback } from "react";
+import { initHangman, destroyHangman } from "../games/hangman";
+import { initUsernameUI } from "../games/username";
 
 export default function HangmanPage() {
+  const [scores, setScores] = useState([]);
+
+  const loadLeaderboard = useCallback(() => {
+    fetch(
+      "http://localhost:5000/api/scores/leaderboard?game=hangman&limit=10"
+    )
+      .then((res) => res.json())
+      .then((rows) => setScores(rows))
+      .catch((err) =>
+        console.error("Error loading Hangman leaderboard (React):", err)
+      );
+  }, []);
+
   useEffect(() => {
-    // Add custom styles for animations
+    // animated background styles
     const styleId = "hangman-animations";
     if (!document.getElementById(styleId)) {
       const style = document.createElement("style");
@@ -226,10 +240,17 @@ export default function HangmanPage() {
       document.head.appendChild(style);
     }
 
-    if (typeof initHangman === "function") {
-      initHangman();
-    }
-  }, []);
+    // username + leaderboard + game init
+    initUsernameUI();
+    loadLeaderboard();
+    initHangman({ onScoreSaved: loadLeaderboard });
+
+    return () => {
+      if (typeof destroyHangman === "function") {
+        destroyHangman();
+      }
+    };
+  }, [loadLeaderboard]);
 
   return (
     <main className="min-h-[calc(100vh-80px)] relative overflow-hidden">
@@ -251,8 +272,8 @@ export default function HangmanPage() {
             {String.fromCharCode(65 + Math.floor(Math.random() * 26))}
           </div>
         ))}
-        
-        {/* Books with page turning effect */}
+
+        {/* Books */}
         {[...Array(6)].map((_, i) => (
           <div
             key={`book-${i}`}
@@ -267,7 +288,7 @@ export default function HangmanPage() {
             }}
           />
         ))}
-        
+
         {/* Ink Drops */}
         {[...Array(15)].map((_, i) => (
           <div
@@ -281,7 +302,7 @@ export default function HangmanPage() {
             }}
           />
         ))}
-        
+
         {/* Quill Pens */}
         {[...Array(8)].map((_, i) => (
           <div
@@ -295,7 +316,7 @@ export default function HangmanPage() {
             }}
           />
         ))}
-        
+
         {/* Scrolls */}
         {[...Array(4)].map((_, i) => (
           <div
@@ -309,7 +330,7 @@ export default function HangmanPage() {
             }}
           />
         ))}
-        
+
         {/* Magnifying Glasses */}
         {[...Array(5)].map((_, i) => (
           <div
@@ -323,7 +344,7 @@ export default function HangmanPage() {
             }}
           />
         ))}
-        
+
         {/* Word Fragments */}
         {[...Array(12)].map((_, i) => (
           <div
@@ -336,10 +357,12 @@ export default function HangmanPage() {
               animationDelay: `${Math.random() * 8}s`,
             }}
           >
-            {['ING', 'TION', 'ABLE', 'MENT', 'NESS', 'ITY'][Math.floor(Math.random() * 6)]}
+            {["ING", "TION", "ABLE", "MENT", "NESS", "ITY"][
+              Math.floor(Math.random() * 6)
+            ]}
           </div>
         ))}
-        
+
         {/* Dictionary Pages */}
         {[...Array(5)].map((_, i) => (
           <div
@@ -354,44 +377,44 @@ export default function HangmanPage() {
             }}
           />
         ))}
-        
+
         {/* Library Zones */}
-        <div 
+        <div
           className="library-zone"
           style={{
-            width: '300px',
-            height: '300px',
-            top: '10%',
-            left: '10%',
-            backgroundColor: 'rgba(139, 92, 246, 0.05)',
-            animation: 'float 15s ease-in-out infinite',
+            width: "300px",
+            height: "300px",
+            top: "10%",
+            left: "10%",
+            backgroundColor: "rgba(139, 92, 246, 0.05)",
+            animation: "float 15s ease-in-out infinite",
           }}
         />
-        <div 
+        <div
           className="library-zone"
           style={{
-            width: '250px',
-            height: '250px',
-            bottom: '15%',
-            right: '15%',
-            backgroundColor: 'rgba(251, 191, 36, 0.05)',
-            animation: 'floatReverse 12s ease-in-out infinite',
+            width: "250px",
+            height: "250px",
+            bottom: "15%",
+            right: "15%",
+            backgroundColor: "rgba(251, 191, 36, 0.05)",
+            animation: "floatReverse 12s ease-in-out infinite",
           }}
         />
-        <div 
+        <div
           className="library-zone"
           style={{
-            width: '200px',
-            height: '200px',
-            top: '50%',
-            left: '60%',
-            backgroundColor: 'rgba(196, 181, 253, 0.05)',
-            animation: 'float 18s ease-in-out infinite',
-            animationDelay: '3s',
+            width: "200px",
+            height: "200px",
+            top: "50%",
+            left: "60%",
+            backgroundColor: "rgba(196, 181, 253, 0.05)",
+            animation: "float 18s ease-in-out infinite",
+            animationDelay: "3s",
           }}
         />
       </div>
-      
+
       {/* Main content */}
       <div className="relative max-w-4xl mx-auto px-4 py-10">
         {/* title + description */}
@@ -400,17 +423,16 @@ export default function HangmanPage() {
             Hangman
           </h2>
           <p className="mt-2 text-sm md:text-base text-slate-300">
-            Guess the hidden word one letter at a time. You have limited wrong guesses.
+            Guess the hidden word one letter at a time. You have limited wrong
+            guesses.
           </p>
         </div>
 
-        {/* card */}
         <div className="grid gap-8 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] items-start">
           {/* game panel */}
           <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_20px_50px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5 relative overflow-hidden">
-            {/* Library effect at top */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-50"></div>
-            
+
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
                 Word Game
@@ -463,11 +485,10 @@ export default function HangmanPage() {
             </div>
           </div>
 
-          {/* leaderboard */}
+          {/* leaderboard – React controls rows */}
           <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_18px_40px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5 relative overflow-hidden">
-            {/* Library effect at top */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-50"></div>
-            
+
             <h3 className="text-lg font-semibold text-slate-50 mb-2">
               Top Hangman Scores
             </h3>
@@ -486,15 +507,37 @@ export default function HangmanPage() {
                     <th className="py-2 text-right">Score</th>
                   </tr>
                 </thead>
-                <tbody>{/* rows filled by JS */}</tbody>
+                <tbody>
+                  {scores.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={2}
+                        className="py-2 text-center text-slate-500"
+                      >
+                        No scores yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    scores.map((row, index) => (
+                      <tr key={row._id || index}>
+                        <td>
+                          {index + 1}. {row.username}
+                        </td>
+                        <td className="py-1 text-right">{row.value}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
               </table>
             </div>
           </div>
         </div>
-        
+
         {/* Game instructions */}
         <div className="mt-8 rounded-xl bg-slate-900/50 border border-slate-800/50 p-4">
-          <h4 className="text-sm font-medium text-slate-300 mb-2">How to Play</h4>
+          <h4 className="text-sm font-medium text-slate-300 mb-2">
+            How to Play
+          </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-400">
             <div className="flex items-start">
               <span className="text-purple-400 mr-2">🔤</span>

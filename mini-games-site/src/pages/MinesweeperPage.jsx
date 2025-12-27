@@ -1,12 +1,15 @@
 // src/pages/MinesweeperPage.jsx
 import React, { useEffect, useState, useCallback } from "react";
-import { initMinesweeper } from "../games/minesweeper";
+import { initMinesweeper, destroyMinesweeper } from "../games/minesweeper";
+import { initUsernameUI } from "../games/username";
 
 export default function MinesweeperPage() {
   const [scores, setScores] = useState([]);
 
   const loadLeaderboard = useCallback(() => {
-    fetch("http://localhost:5000/api/scores/leaderboard?game=minesweeper&limit=10")
+    fetch(
+      "http://localhost:5000/api/scores/leaderboard?game=minesweeper&limit=10"
+    )
       .then((res) => res.json())
       .then((rows) => setScores(rows))
       .catch((err) =>
@@ -14,13 +17,8 @@ export default function MinesweeperPage() {
       );
   }, []);
 
-  // initial load of leaderboard
+  // animated background + game init
   useEffect(() => {
-    loadLeaderboard();
-  }, [loadLeaderboard]);
-
-  useEffect(() => {
-    // Add custom styles for animations
     const styleId = "minesweeper-animations";
     if (!document.getElementById(styleId)) {
       const style = document.createElement("style");
@@ -291,8 +289,15 @@ export default function MinesweeperPage() {
       document.head.appendChild(style);
     }
 
-    // pass callback so game can tell React to refresh after saving score
+    initUsernameUI();
+    loadLeaderboard();
     initMinesweeper?.({ onScoreSaved: loadLeaderboard });
+
+    return () => {
+      if (typeof destroyMinesweeper === "function") {
+        destroyMinesweeper();
+      }
+    };
   }, [loadLeaderboard]);
 
   return (
@@ -313,7 +318,7 @@ export default function MinesweeperPage() {
             }}
           />
         ))}
-        
+
         {/* Mines */}
         {[...Array(10)].map((_, i) => (
           <div
@@ -327,7 +332,7 @@ export default function MinesweeperPage() {
             }}
           />
         ))}
-        
+
         {/* Flags */}
         {[...Array(8)].map((_, i) => (
           <div
@@ -341,7 +346,7 @@ export default function MinesweeperPage() {
             }}
           />
         ))}
-        
+
         {/* Explosions */}
         {[...Array(6)].map((_, i) => (
           <div
@@ -355,7 +360,7 @@ export default function MinesweeperPage() {
             }}
           />
         ))}
-        
+
         {/* Numbers */}
         {[...Array(15)].map((_, i) => (
           <div
@@ -372,7 +377,7 @@ export default function MinesweeperPage() {
             {Math.floor(Math.random() * 8) + 1}
           </div>
         ))}
-        
+
         {/* Warning Signs */}
         {[...Array(5)].map((_, i) => (
           <div
@@ -386,46 +391,46 @@ export default function MinesweeperPage() {
             }}
           />
         ))}
-        
+
         {/* Radars */}
         <div
           className="radar"
           style={{
-            width: '80px',
-            height: '80px',
-            top: '15%',
-            right: '10%',
+            width: "80px",
+            height: "80px",
+            top: "15%",
+            right: "10%",
           }}
         />
         <div
           className="radar"
           style={{
-            width: '60px',
-            height: '60px',
-            bottom: '20%',
-            left: '15%',
+            width: "60px",
+            height: "60px",
+            bottom: "20%",
+            left: "15%",
           }}
         />
-        
+
         {/* Caution Tapes */}
         <div
           className="caution-tape"
           style={{
-            width: '100%',
-            bottom: '10%',
-            transform: 'rotate(-2deg)',
+            width: "100%",
+            bottom: "10%",
+            transform: "rotate(-2deg)",
           }}
         />
         <div
           className="caution-tape"
           style={{
-            width: '80%',
-            top: '15%',
-            right: '0',
-            transform: 'rotate(1deg)',
+            width: "80%",
+            top: "15%",
+            right: "0",
+            transform: "rotate(1deg)",
           }}
         />
-        
+
         {/* Binoculars */}
         {[...Array(3)].map((_, i) => (
           <div
@@ -439,7 +444,7 @@ export default function MinesweeperPage() {
             }}
           />
         ))}
-        
+
         {/* Compasses */}
         {[...Array(4)].map((_, i) => (
           <div
@@ -453,44 +458,44 @@ export default function MinesweeperPage() {
             }}
           />
         ))}
-        
+
         {/* Field Zones */}
-        <div 
+        <div
           className="field-zone"
           style={{
-            width: '300px',
-            height: '300px',
-            top: '10%',
-            left: '10%',
-            backgroundColor: 'rgba(239, 68, 68, 0.05)',
-            animation: 'float 15s ease-in-out infinite',
+            width: "300px",
+            height: "300px",
+            top: "10%",
+            left: "10%",
+            backgroundColor: "rgba(239, 68, 68, 0.05)",
+            animation: "float 15s ease-in-out infinite",
           }}
         />
-        <div 
+        <div
           className="field-zone"
           style={{
-            width: '250px',
-            height: '250px',
-            bottom: '15%',
-            right: '15%',
-            backgroundColor: 'rgba(251, 191, 36, 0.05)',
-            animation: 'floatReverse 12s ease-in-out infinite',
+            width: "250px",
+            height: "250px",
+            bottom: "15%",
+            right: "15%",
+            backgroundColor: "rgba(251, 191, 36, 0.05)",
+            animation: "floatReverse 12s ease-in-out infinite",
           }}
         />
-        <div 
+        <div
           className="field-zone"
           style={{
-            width: '200px',
-            height: '200px',
-            top: '50%',
-            left: '60%',
-            backgroundColor: 'rgba(124, 45, 18, 0.05)',
-            animation: 'float 18s ease-in-out infinite',
-            animationDelay: '3s',
+            width: "200px",
+            height: "200px",
+            top: "50%",
+            left: "60%",
+            backgroundColor: "rgba(124, 45, 18, 0.05)",
+            animation: "float 18s ease-in-out infinite",
+            animationDelay: "3s",
           }}
         />
       </div>
-      
+
       {/* Main content */}
       <div className="relative max-w-4xl mx-auto px-4 py-10">
         <div className="mb-6">
@@ -498,24 +503,21 @@ export default function MinesweeperPage() {
             Minesweeper
           </h2>
           <p className="mt-2 text-sm md:text-base text-slate-300">
-            Clear all safe cells without hitting a mine. Right-click to
-            place flags.
+            Clear all safe cells without hitting a mine. Right-click to place
+            flags.
           </p>
         </div>
 
         <div className="grid gap-8 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] items-start">
           {/* game panel */}
           <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_20px_50px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5 relative overflow-hidden">
-            {/* Danger effect at top */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-50"></div>
-            
+
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
                 Puzzle
               </span>
-              <span className="text-xs text-slate-400">
-                8×8 · 10 mines
-              </span>
+              <span className="text-xs text-slate-400">8×8 · 10 mines</span>
             </div>
 
             <div id="game-root" className="flex flex-col items-center">
@@ -537,11 +539,10 @@ export default function MinesweeperPage() {
             </div>
           </div>
 
-          {/* leaderboard */}
+          {/* leaderboard – React renders rows */}
           <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_18px_40px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5 relative overflow-hidden">
-            {/* Danger effect at top */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-50"></div>
-            
+
             <h3 className="text-lg font-semibold text-slate-50 mb-2">
               Top Minesweeper Scores
             </h3>
@@ -561,21 +562,36 @@ export default function MinesweeperPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {scores.map((row, index) => (
-                    <tr key={row._id || index}>
-                      <td>{index + 1}. {row.username}</td>
-                      <td className="py-1 text-right">{row.value}</td>
+                  {scores.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={2}
+                        className="py-2 text-center text-slate-500"
+                      >
+                        No scores yet.
+                      </td>
                     </tr>
-                  ))}
+                  ) : (
+                    scores.map((row, index) => (
+                      <tr key={row._id || index}>
+                        <td>
+                          {index + 1}. {row.username}
+                        </td>
+                        <td className="py-1 text-right">{row.value}</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
         </div>
-        
+
         {/* Game instructions */}
         <div className="mt-8 rounded-xl bg-slate-900/50 border border-slate-800/50 p-4">
-          <h4 className="text-sm font-medium text-slate-300 mb-2">How to Play</h4>
+          <h4 className="text-sm font-medium text-slate-300 mb-2">
+            How to Play
+          </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-400">
             <div className="flex items-start">
               <span className="text-red-400 mr-2">👆</span>
