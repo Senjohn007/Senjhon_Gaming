@@ -4,37 +4,307 @@ import { initAsteroids } from "../games/asteroids";
 
 export default function AsteroidsPage() {
   useEffect(() => {
+    // Add custom styles for animations
+    const styleId = "asteroids-animations";
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement("style");
+      style.id = styleId;
+      style.textContent = `
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        @keyframes floatReverse {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-15px) rotate(-5deg); }
+        }
+        
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.2; }
+          50% { opacity: 1; }
+        }
+        
+        @keyframes shootingStar {
+          0% { transform: translateX(-100px) translateY(-100px) rotate(45deg); opacity: 1; }
+          70% { opacity: 1; }
+          100% { transform: translateX(1000px) translateY(1000px) rotate(45deg); opacity: 0; }
+        }
+        
+        @keyframes asteroidFloat {
+          0% { transform: translateX(-100px) translateY(0) rotate(0deg); }
+          100% { transform: translateX(calc(100vw + 100px)) translateY(50px) rotate(360deg); }
+        }
+        
+        @keyframes planetRotate {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes nebulaPulse {
+          0%, 100% { opacity: 0.1; transform: scale(1); }
+          50% { opacity: 0.2; transform: scale(1.05); }
+        }
+        
+        @keyframes spaceshipFloat {
+          0% { transform: translateX(0) translateY(0) rotate(0deg); }
+          25% { transform: translateX(30px) translateY(-10px) rotate(5deg); }
+          50% { transform: translateX(0) translateY(-20px) rotate(0deg); }
+          75% { transform: translateX(-30px) translateY(-10px) rotate(-5deg); }
+          100% { transform: translateX(0) translateY(0) rotate(0deg); }
+        }
+        
+        .animated-bg {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: -1;
+          overflow: hidden;
+          background: linear-gradient(-45deg, #0f172a, #020617, #0f172a, #1e1b4b);
+          background-size: 400% 400%;
+          animation: gradientShift 20s ease infinite;
+        }
+        
+        .star {
+          position: absolute;
+          background: white;
+          border-radius: 50%;
+          animation: twinkle 3s ease-in-out infinite;
+        }
+        
+        .shooting-star {
+          position: absolute;
+          width: 2px;
+          height: 2px;
+          background: white;
+          border-radius: 50%;
+          animation: shootingStar 3s linear infinite;
+        }
+        
+        .shooting-star::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100px;
+          height: 1px;
+          background: linear-gradient(to left, transparent, rgba(255,255,255,0.8));
+          transform: translateX(-2px);
+        }
+        
+        .asteroid {
+          position: absolute;
+          background: linear-gradient(135deg, #475569, #334155);
+          border-radius: 40% 60% 50% 50%;
+          animation: asteroidFloat 30s linear infinite;
+        }
+        
+        .planet {
+          position: absolute;
+          border-radius: 50%;
+          animation: planetRotate 60s linear infinite;
+        }
+        
+        .planet::before {
+          content: '';
+          position: absolute;
+          top: 10%;
+          left: 10%;
+          width: 80%;
+          height: 80%;
+          border-radius: 50%;
+          background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent);
+        }
+        
+        .planet::after {
+          content: '';
+          position: absolute;
+          top: -10%;
+          left: 50%;
+          width: 120%;
+          height: 20%;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.05);
+          transform: rotateX(60deg);
+        }
+        
+        .nebula {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(60px);
+          animation: nebulaPulse 10s ease-in-out infinite;
+        }
+        
+        .spaceship {
+          position: absolute;
+          opacity: 0.15;
+          animation: spaceshipFloat 15s ease-in-out infinite;
+        }
+        
+        .spaceship::before {
+          content: '';
+          position: absolute;
+          width: 30px;
+          height: 15px;
+          background: linear-gradient(to right, #64748b, #94a3b8);
+          border-radius: 50% 10% 10% 50%;
+        }
+        
+        .spaceship::after {
+          content: '';
+          position: absolute;
+          width: 15px;
+          height: 5px;
+          background: #3b82f6;
+          top: 5px;
+          left: -10px;
+          border-radius: 50% 0 0 50%;
+        }
+        
+        .space-debris {
+          position: absolute;
+          width: 3px;
+          height: 3px;
+          background: rgba(148, 163, 184, 0.5);
+          border-radius: 50%;
+          animation: float 10s ease-in-out infinite;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
     initAsteroids?.();
   }, []);
 
   return (
     <main className="min-h-[calc(100vh-80px)] relative overflow-hidden">
-      {/* Subtle animated space background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-black"></div>
+      {/* Animated Background */}
+      <div className="animated-bg">
+        {/* Stars with varying sizes and twinkle effects */}
+        {[...Array(100)].map((_, i) => (
+          <div
+            key={`star-${i}`}
+            className="star"
+            style={{
+              width: `${Math.random() * 3}px`,
+              height: `${Math.random() * 3}px`,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 5}s`,
+              animationDuration: `${Math.random() * 3 + 2}s`,
+            }}
+          />
+        ))}
         
-        {/* Animated stars */}
-        <div className="absolute inset-0">
-          {[...Array(50)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute rounded-full bg-white animate-pulse"
-              style={{
-                width: `${Math.random() * 2 + 1}px`,
-                height: `${Math.random() * 2 + 1}px`,
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 5}s`,
-                animationDuration: `${Math.random() * 3 + 2}s`,
-                opacity: Math.random() * 0.8 + 0.2
-              }}
-            />
-          ))}
-        </div>
+        {/* Shooting stars */}
+        {[...Array(5)].map((_, i) => (
+          <div
+            key={`shooting-star-${i}`}
+            className="shooting-star"
+            style={{
+              top: `${Math.random() * 50}%`,
+              left: `${Math.random() * 50}%`,
+              animationDelay: `${Math.random() * 10}s`,
+              animationDuration: `${Math.random() * 2 + 3}s`,
+            }}
+          />
+        ))}
         
-        {/* Slow moving nebula effect */}
-        <div className="absolute top-0 left-0 w-96 h-96 bg-purple-900/5 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-900/5 rounded-full blur-3xl animate-float animation-delay-4000"></div>
+        {/* Asteroids floating in the background */}
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={`asteroid-${i}`}
+            className="asteroid"
+            style={{
+              width: `${Math.random() * 30 + 20}px`,
+              height: `${Math.random() * 30 + 20}px`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 30}s`,
+              animationDuration: `${Math.random() * 20 + 30}s`,
+            }}
+          />
+        ))}
+        
+        {/* Planets */}
+        <div 
+          className="planet"
+          style={{
+            width: '80px',
+            height: '80px',
+            top: '15%',
+            right: '10%',
+            background: 'linear-gradient(135deg, #7c3aed, #4c1d95)',
+          }}
+        />
+        <div 
+          className="planet"
+          style={{
+            width: '60px',
+            height: '60px',
+            bottom: '20%',
+            left: '15%',
+            background: 'linear-gradient(135deg, #dc2626, #7f1d1d)',
+            animationDuration: '80s',
+          }}
+        />
+        
+        {/* Nebula effects */}
+        <div 
+          className="nebula"
+          style={{
+            width: '400px',
+            height: '400px',
+            top: '5%',
+            left: '30%',
+            background: 'radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, transparent 70%)',
+          }}
+        />
+        <div 
+          className="nebula"
+          style={{
+            width: '300px',
+            height: '300px',
+            bottom: '10%',
+            right: '20%',
+            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%)',
+            animationDelay: '5s',
+          }}
+        />
+        
+        {/* Spaceships */}
+        {[...Array(3)].map((_, i) => (
+          <div
+            key={`spaceship-${i}`}
+            className="spaceship"
+            style={{
+              top: `${20 + i * 25}%`,
+              left: `${10 + i * 30}%`,
+              animationDelay: `${i * 5}s`,
+            }}
+          />
+        ))}
+        
+        {/* Space debris */}
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={`debris-${i}`}
+            className="space-debris"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 5}s`,
+              animationDuration: `${Math.random() * 5 + 10}s`,
+            }}
+          />
+        ))}
       </div>
       
       {/* Main content */}

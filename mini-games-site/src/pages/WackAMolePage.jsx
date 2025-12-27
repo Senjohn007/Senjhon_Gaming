@@ -4,68 +4,235 @@ import { initWhackAMole } from "../games/whack-a-mole";
 
 export default function WackAMolePage() {
   useEffect(() => {
+    // Add custom styles for animations
+    const styleId = "whack-a-mole-animations";
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement("style");
+      style.id = styleId;
+      style.textContent = `
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        @keyframes floatReverse {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-15px) rotate(-5deg); }
+        }
+        
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes molePop {
+          0% { transform: translateY(100%); opacity: 0; }
+          20% { opacity: 1; }
+          80% { opacity: 1; }
+          100% { transform: translateY(-100%); opacity: 0; }
+        }
+        
+        @keyframes hammerSwing {
+          0% { transform: rotate(0deg); }
+          50% { transform: rotate(-30deg); }
+          100% { transform: rotate(0deg); }
+        }
+        
+        @keyframes grassWave {
+          0% { transform: translateX(0) scaleY(1); }
+          50% { transform: translateX(5px) scaleY(0.95); }
+          100% { transform: translateX(0) scaleY(1); }
+        }
+        
+        .animated-bg {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: -1;
+          overflow: hidden;
+          background: linear-gradient(-45deg, #0f172a, #1e293b, #0f172a, #1e1b4b);
+          background-size: 400% 400%;
+          animation: gradientShift 15s ease infinite;
+        }
+        
+        .grass-blade {
+          position: absolute;
+          bottom: 0;
+          width: 3px;
+          height: 30px;
+          background: linear-gradient(to top, #14532d, #22c55e);
+          border-radius: 100% 0 0 0;
+          transform-origin: bottom center;
+          animation: grassWave 3s ease-in-out infinite;
+        }
+        
+        .grass-blade:nth-child(odd) {
+          animation-delay: 0.5s;
+          animation-duration: 3.5s;
+        }
+        
+        .grass-blade:nth-child(even) {
+          animation-delay: 1s;
+          animation-duration: 2.5s;
+        }
+        
+        .mole-silhouette {
+          position: absolute;
+          width: 40px;
+          height: 40px;
+          background: rgba(139, 69, 19, 0.15);
+          border-radius: 50% 50% 40% 40%;
+          animation: molePop 8s ease-in-out infinite;
+        }
+        
+        .hammer-icon {
+          position: absolute;
+          width: 30px;
+          height: 30px;
+          opacity: 0.2;
+          animation: float 10s ease-in-out infinite;
+        }
+        
+        .hammer-icon::before {
+          content: '';
+          position: absolute;
+          width: 8px;
+          height: 20px;
+          background: rgba(156, 163, 175, 0.3);
+          top: 5px;
+          left: 11px;
+          border-radius: 2px;
+        }
+        
+        .hammer-icon::after {
+          content: '';
+          position: absolute;
+          width: 20px;
+          height: 15px;
+          background: rgba(156, 163, 175, 0.3);
+          border-radius: 3px;
+          top: 0;
+          left: 5px;
+        }
+        
+        .dirt-particle {
+          position: absolute;
+          width: 5px;
+          height: 5px;
+          background: rgba(120, 53, 15, 0.3);
+          border-radius: 50%;
+          animation: float 7s ease-in-out infinite;
+        }
+        
+        .garden-zone {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(40px);
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
     initWhackAMole?.();
   }, []);
 
   return (
     <main className="min-h-[calc(100vh-80px)] relative overflow-hidden">
-      {/* Garden/field-themed animated background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-green-950/20 to-slate-900"></div>
+      {/* Animated Background */}
+      <div className="animated-bg">
+        {/* Grass Blades at the bottom */}
+        {[...Array(30)].map((_, i) => (
+          <div
+            key={`grass-${i}`}
+            className="grass-blade"
+            style={{
+              left: `${Math.random() * 100}%`,
+              height: `${Math.random() * 20 + 20}px`,
+              animationDelay: `${Math.random() * 2}s`,
+            }}
+          />
+        ))}
         
-        {/* Subtle grid pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="h-full w-full" style={{
-            backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
-            backgroundSize: "30px 30px"
-          }}></div>
-        </div>
+        {/* Mole Silhouettes */}
+        {[...Array(5)].map((_, i) => (
+          <div
+            key={`mole-${i}`}
+            className="mole-silhouette"
+            style={{
+              left: `${Math.random() * 100}%`,
+              bottom: `${Math.random() * 30}%`,
+              animationDelay: `${Math.random() * 8}s`,
+              animationDuration: `${Math.random() * 5 + 8}s`,
+            }}
+          />
+        ))}
         
-        {/* Floating mole-like elements */}
-        <div className="absolute inset-0">
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute opacity-15"
-              style={{
-                width: `${Math.random() * 30 + 20}px`,
-                height: `${Math.random() * 20 + 15}px`,
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                backgroundColor: "rgba(139, 69, 19, 0.2)",
-                borderRadius: "50% 50% 40% 40%",
-                animation: `float ${Math.random() * 15 + 10}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 5}s`,
-              }}
-            />
-          ))}
-        </div>
+        {/* Hammer Icons */}
+        {[...Array(4)].map((_, i) => (
+          <div
+            key={`hammer-${i}`}
+            className="hammer-icon"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 5}s`,
+              animationDuration: `${Math.random() * 5 + 10}s`,
+            }}
+          />
+        ))}
         
-        {/* Floating hammer elements */}
-        <div className="absolute inset-0">
-          {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute opacity-15"
-              style={{
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                animation: `float ${Math.random() * 20 + 15}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 10}s`,
-              }}
-            >
-              <div className="flex flex-col items-center">
-                <div className="w-2 h-8 bg-gray-700/30"></div>
-                <div className="w-6 h-6 bg-gray-600/30 rounded-sm"></div>
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Dirt Particles */}
+        {[...Array(15)].map((_, i) => (
+          <div
+            key={`dirt-${i}`}
+            className="dirt-particle"
+            style={{
+              left: `${Math.random() * 100}%`,
+              bottom: `${Math.random() * 40}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${Math.random() * 3 + 5}s`,
+            }}
+          />
+        ))}
         
-        {/* Garden/field zones */}
-        <div className="absolute top-20 left-20 w-32 h-32 bg-green-500/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-20 right-20 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl animate-float animation-delay-4000"></div>
-        <div className="absolute top-1/2 left-1/3 w-36 h-36 bg-lime-500/10 rounded-full blur-3xl animate-float animation-delay-2000"></div>
+        {/* Garden Zones */}
+        <div 
+          className="garden-zone"
+          style={{
+            width: '300px',
+            height: '300px',
+            top: '10%',
+            left: '10%',
+            backgroundColor: 'rgba(34, 197, 94, 0.05)',
+            animation: 'float 15s ease-in-out infinite',
+          }}
+        />
+        <div 
+          className="garden-zone"
+          style={{
+            width: '250px',
+            height: '250px',
+            bottom: '15%',
+            right: '15%',
+            backgroundColor: 'rgba(251, 191, 36, 0.05)',
+            animation: 'floatReverse 12s ease-in-out infinite',
+          }}
+        />
+        <div 
+          className="garden-zone"
+          style={{
+            width: '200px',
+            height: '200px',
+            top: '50%',
+            left: '60%',
+            backgroundColor: 'rgba(163, 230, 53, 0.05)',
+            animation: 'float 18s ease-in-out infinite',
+            animationDelay: '3s',
+          }}
+        />
       </div>
       
       {/* Main content */}
