@@ -1,12 +1,15 @@
 // src/pages/RollDicePage.jsx
 import React, { useEffect, useState, useCallback } from "react";
-import { initRollDice } from "../games/roll-dice";
+import { initRollDice, destroyRollDice } from "../games/roll-dice";
+import { initUsernameUI } from "../games/username";
 
 export default function RollDicePage() {
   const [scores, setScores] = useState([]);
 
   const loadLeaderboard = useCallback(() => {
-    fetch("http://localhost:5000/api/scores/leaderboard?game=roll-dice&limit=10")
+    fetch(
+      "http://localhost:5000/api/scores/leaderboard?game=roll-dice&limit=10"
+    )
       .then((res) => res.json())
       .then((rows) => setScores(rows))
       .catch((err) =>
@@ -15,15 +18,19 @@ export default function RollDicePage() {
   }, []);
 
   useEffect(() => {
+    // make sure username / getPlayerInfo is available
+    initUsernameUI();
     loadLeaderboard();
+
+    initRollDice({ onScoreSaved: loadLeaderboard });
+
+    return () => {
+      if (typeof destroyRollDice === "function") {
+        destroyRollDice();
+      }
+    };
   }, [loadLeaderboard]);
 
-  useEffect(() => {
-    if (typeof initRollDice === "function") {
-      initRollDice({ onScoreSaved: loadLeaderboard });
-    }
-  }, [loadLeaderboard]);
-  
   useEffect(() => {
     // Add custom styles for animations
     const styleId = "roll-dice-animations";
@@ -341,11 +348,12 @@ export default function RollDicePage() {
             </div>
           );
         })}
-        
+
         {/* Casino Chips */}
         {[...Array(8)].map((_, i) => {
-          const chipColors = ['#dc2626', '#16a34a', '#2563eb', '#ca8a04'];
-          const chipColor = chipColors[Math.floor(Math.random() * chipColors.length)];
+          const chipColors = ["#dc2626", "#16a34a", "#2563eb", "#ca8a04"];
+          const chipColor =
+            chipColors[Math.floor(Math.random() * chipColors.length)];
           return (
             <div
               key={`chip-${i}`}
@@ -363,11 +371,11 @@ export default function RollDicePage() {
             </div>
           );
         })}
-        
+
         {/* Playing Cards */}
         {[...Array(6)].map((_, i) => {
-          const suits = ['♠', '♥', '♦', '♣'];
-          const suitColors = ['black', 'red', 'red', 'black'];
+          const suits = ["♠", "♥", "♦", "♣"];
+          const suitColors = ["black", "red", "red", "black"];
           const suitIndex = Math.floor(Math.random() * suits.length);
           return (
             <div
@@ -386,7 +394,7 @@ export default function RollDicePage() {
             />
           );
         })}
-        
+
         {/* Gold Coins */}
         {[...Array(10)].map((_, i) => (
           <div
@@ -402,15 +410,15 @@ export default function RollDicePage() {
             }}
           />
         ))}
-        
+
         {/* Neon Signs */}
         <div
           className="neon-sign"
           style={{
-            top: '10%',
-            left: '10%',
-            fontSize: '24px',
-            animationDelay: '0.5s',
+            top: "10%",
+            left: "10%",
+            fontSize: "24px",
+            animationDelay: "0.5s",
           }}
         >
           LUCKY
@@ -418,12 +426,12 @@ export default function RollDicePage() {
         <div
           className="neon-sign"
           style={{
-            top: '20%',
-            right: '15%',
-            fontSize: '20px',
-            animationDelay: '1.5s',
-            color: '#ec4899',
-            textShadow: '0 0 10px #ec4899, 0 0 20px #ec4899',
+            top: "20%",
+            right: "15%",
+            fontSize: "20px",
+            animationDelay: "1.5s",
+            color: "#ec4899",
+            textShadow: "0 0 10px #ec4899, 0 0 20px #ec4899",
           }}
         >
           WINNER
@@ -431,20 +439,20 @@ export default function RollDicePage() {
         <div
           className="neon-sign"
           style={{
-            bottom: '15%',
-            left: '20%',
-            fontSize: '22px',
-            animationDelay: '2.5s',
-            color: '#10b981',
-            textShadow: '0 0 10px #10b981, 0 0 20px #10b981',
+            bottom: "15%",
+            left: "20%",
+            fontSize: "22px",
+            animationDelay: "2.5s",
+            color: "#10b981",
+            textShadow: "0 0 10px #10b981, 0 0 20px #10b981",
           }}
         >
           JACKPOT
         </div>
-        
+
         {/* Slot Machine Symbols */}
         {[...Array(5)].map((_, i) => {
-          const symbols = ['🍒', '🍋', '🔔', '💎', '7️⃣'];
+          const symbols = ["🍒", "🍋", "🔔", "💎", "7️⃣"];
           const symbol = symbols[Math.floor(Math.random() * symbols.length)];
           return (
             <div
@@ -461,67 +469,69 @@ export default function RollDicePage() {
             </div>
           );
         })}
-        
+
         {/* Roulette Wheels */}
         <div
           className="roulette-wheel"
           style={{
-            width: '80px',
-            height: '80px',
-            top: '15%',
-            right: '10%',
-            background: 'conic-gradient(#dc2626 0deg 18deg, #1e293b 18deg 36deg, #dc2626 36deg 54deg, #1e293b 54deg 72deg, #dc2626 72deg 90deg, #1e293b 90deg 108deg, #dc2626 108deg 126deg, #1e293b 126deg 144deg, #dc2626 144deg 162deg, #1e293b 162deg 180deg, #dc2626 180deg 198deg, #1e293b 198deg 216deg, #dc2626 216deg 234deg, #1e293b 234deg 252deg, #dc2626 252deg 270deg, #1e293b 270deg 288deg, #dc2626 288deg 306deg, #1e293b 306deg 324deg, #dc2626 324deg 342deg, #1e293b 342deg 360deg)',
+            width: "80px",
+            height: "80px",
+            top: "15%",
+            right: "10%",
+            background:
+              "conic-gradient(#dc2626 0deg 18deg, #1e293b 18deg 36deg, #dc2626 36deg 54deg, #1e293b 54deg 72deg, #dc2626 72deg 90deg, #1e293b 90deg 108deg, #dc2626 108deg 126deg, #1e293b 126deg 144deg, #dc2626 144deg 162deg, #1e293b 162deg 180deg, #dc2626 180deg 198deg, #1e293b 198deg 216deg, #dc2626 216deg 234deg, #1e293b 234deg 252deg, #dc2626 252deg 270deg, #1e293b 270deg 288deg, #dc2626 288deg 306deg, #1e293b 306deg 324deg, #dc2626 324deg 342deg, #1e293b 342deg 360deg)",
           }}
         />
         <div
           className="roulette-wheel"
           style={{
-            width: '60px',
-            height: '60px',
-            bottom: '20%',
-            left: '15%',
-            animationDuration: '25s',
-            background: 'conic-gradient(#16a34a 0deg 36deg, #1e293b 36deg 72deg, #16a34a 72deg 108deg, #1e293b 108deg 144deg, #16a34a 144deg 180deg, #1e293b 180deg 216deg, #16a34a 216deg 252deg, #1e293b 252deg 288deg, #16a34a 288deg 324deg, #1e293b 324deg 360deg)',
+            width: "60px",
+            height: "60px",
+            bottom: "20%",
+            left: "15%",
+            animationDuration: "25s",
+            background:
+              "conic-gradient(#16a34a 0deg 36deg, #1e293b 36deg 72deg, #16a34a 72deg 108deg, #1e293b 108deg 144deg, #16a34a 144deg 180deg, #1e293b 180deg 216deg, #16a34a 216deg 252deg, #1e293b 252deg 288deg, #16a34a 288deg 324deg, #1e293b 324deg 360deg)",
           }}
         />
-        
+
         {/* Casino Zones */}
-        <div 
+        <div
           className="casino-zone"
           style={{
-            width: '300px',
-            height: '300px',
-            top: '10%',
-            left: '10%',
-            backgroundColor: 'rgba(220, 38, 38, 0.05)',
-            animation: 'float 15s ease-in-out infinite',
+            width: "300px",
+            height: "300px",
+            top: "10%",
+            left: "10%",
+            backgroundColor: "rgba(220, 38, 38, 0.05)",
+            animation: "float 15s ease-in-out infinite",
           }}
         />
-        <div 
+        <div
           className="casino-zone"
           style={{
-            width: '250px',
-            height: '250px',
-            bottom: '15%',
-            right: '15%',
-            backgroundColor: 'rgba(251, 191, 36, 0.05)',
-            animation: 'floatReverse 12s ease-in-out infinite',
+            width: "250px",
+            height: "250px",
+            bottom: "15%",
+            right: "15%",
+            backgroundColor: "rgba(251, 191, 36, 0.05)",
+            animation: "floatReverse 12s ease-in-out infinite",
           }}
         />
-        <div 
+        <div
           className="casino-zone"
           style={{
-            width: '200px',
-            height: '200px',
-            top: '50%',
-            left: '60%',
-            backgroundColor: 'rgba(34, 197, 94, 0.05)',
-            animation: 'float 18s ease-in-out infinite',
-            animationDelay: '3s',
+            width: "200px",
+            height: "200px",
+            top: "50%",
+            left: "60%",
+            backgroundColor: "rgba(34, 197, 94, 0.05)",
+            animation: "float 18s ease-in-out infinite",
+            animationDelay: "3s",
           }}
         />
       </div>
-      
+
       {/* Main content */}
       <div className="relative max-w-4xl mx-auto px-4 py-10">
         {/* title + description */}
@@ -530,16 +540,16 @@ export default function RollDicePage() {
             Roll Dice
           </h2>
           <p className="mt-2 text-sm md:text-base text-slate-300">
-            Click the button to roll two dice multiple times and try to get the highest total.
+            Click the button to roll two dice multiple times and try to get the
+            highest total.
           </p>
         </div>
 
         <div className="grid gap-8 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] items-start">
           {/* game panel */}
           <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_20px_50px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5 relative overflow-hidden">
-            {/* Casino effect at top */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-50"></div>
-            
+
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
                 Dice Game
@@ -551,7 +561,10 @@ export default function RollDicePage() {
 
             <div id="game-root">
               {/* Match setup */}
-              <div id="roll-setup" className="mb-3 flex flex-wrap items-center gap-2">
+              <div
+                id="roll-setup"
+                className="mb-3 flex flex-wrap items-center gap-2"
+              >
                 <label
                   htmlFor="roll-rounds-select"
                   className="text-sm text-slate-200"
@@ -613,11 +626,10 @@ export default function RollDicePage() {
             </div>
           </div>
 
-          {/* leaderboard */}
+          {/* leaderboard – React only */}
           <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-[0_18px_40px_rgba(15,23,42,0.9)] backdrop-blur-sm px-4 py-5 relative overflow-hidden">
-            {/* Casino effect at top */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-50"></div>
-            
+
             <h3 className="text-lg font-semibold text-slate-50 mb-2">
               Top Roll Dice Scores
             </h3>
@@ -637,21 +649,36 @@ export default function RollDicePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {scores.map((row, index) => (
-                    <tr key={row._id || index}>
-                      <td>{index + 1}. {row.username}</td>
-                      <td className="py-1 text-right">{row.value}</td>
+                  {scores.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={2}
+                        className="py-2 text-center text-slate-500"
+                      >
+                        No scores yet.
+                      </td>
                     </tr>
-                  ))}
+                  ) : (
+                    scores.map((row, index) => (
+                      <tr key={row._id || index}>
+                        <td>
+                          {index + 1}. {row.username}
+                        </td>
+                        <td className="py-1 text-right">{row.value}</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
         </div>
-        
+
         {/* Game instructions */}
         <div className="mt-8 rounded-xl bg-slate-900/50 border border-slate-800/50 p-4">
-          <h4 className="text-sm font-medium text-slate-300 mb-2">How to Play</h4>
+          <h4 className="text-sm font-medium text-slate-300 mb-2">
+            How to Play
+          </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-400">
             <div className="flex items-start">
               <span className="text-purple-400 mr-2">🎲</span>

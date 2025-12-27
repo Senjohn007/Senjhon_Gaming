@@ -1,5 +1,22 @@
 // src/games/roll-dice.js
-export function initRollDice() {
+let cleanupFns = [];
+
+// optional destroy to remove listeners when React unmounts
+export function destroyRollDice() {
+  cleanupFns.forEach((fn) => {
+    try {
+      fn();
+    } catch (e) {
+      console.error("Error during RollDice cleanup:", e);
+    }
+  });
+  cleanupFns = [];
+}
+
+export function initRollDice({ onScoreSaved } = {}) {
+  // reset previous listeners
+  destroyRollDice();
+
   const rollButton = document.getElementById("roll-button");
   const resultDiv = document.getElementById("dice-result");
   const roundsSelect = document.getElementById("roll-rounds-select");
@@ -19,6 +36,7 @@ export function initRollDice() {
     !roundInfoSpan ||
     !scoreInfoSpan
   ) {
+    console.warn("RollDice: required elements not found");
     return;
   }
 
@@ -29,7 +47,6 @@ export function initRollDice() {
     outerDiceContainer.id = "dice-container";
     outerDiceContainer.className =
       "roll-dice-outer flex flex-col items-center justify-center mt-4 mb-4";
-    // insert just above result box
     resultDiv.parentNode.insertBefore(outerDiceContainer, resultDiv);
   } else {
     outerDiceContainer.classList.add(
@@ -41,7 +58,7 @@ export function initRollDice() {
     );
   }
 
-  // TOTAL badge holder (separate row so it never overlaps button)
+  // TOTAL badge holder
   let totalRow = document.getElementById("dice-total-row");
   if (!totalRow) {
     totalRow = document.createElement("div");
@@ -66,231 +83,208 @@ export function initRollDice() {
   let sessionTotal = 0;
   let sessionActive = false;
   let isRolling = false;
+  let destroyed = false;
 
   const diceStyles = `
-    <style>
-      .roll-dice-outer {
-        position: relative;
-        overflow: visible;
-      }
-
-      .dice-total-row {
-        min-height: 30px;
-      }
-
-      .dice-row {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1.5rem;
-        margin: 4px 0 8px 0;
-        min-height: 90px;
-      }
-
-      .dice-slot {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 90px;
-        height: 90px;
-      }
-
-      .dice {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(145deg, #ffffff, #e6e6e6);
-        border-radius: 12px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        box-shadow: 5px 5px 15px rgba(0,0,0,0.2),
-                    -5px -5px 15px rgba(255,255,255,0.1);
-        position: relative;
-        transform-style: preserve-3d;
-        transition: transform 0.3s ease;
-      }
-
-      .dice.rolling {
-        animation: roll 0.8s ease-in-out;
-      }
-
-      @keyframes roll {
-        0%   { transform: rotateX(0deg)    rotateY(0deg); }
-        25%  { transform: rotateX(720deg)  rotateY(360deg)  scale(0.8); }
-        50%  { transform: rotateX(1440deg) rotateY(720deg)  scale(1.1); }
-        75%  { transform: rotateX(2160deg) rotateY(1080deg) scale(0.9); }
-        100% { transform: rotateX(2880deg) rotateY(1440deg) scale(1); }
-      }
-
-      .dice-dot {
-        width: 16px;
-        height: 16px;
-        background-color: #111827;
-        border-radius: 50%;
-        position: absolute;
-      }
-
-      .dice-face-1 .dice-dot:nth-child(1) {
-        top: 50%; left: 50%; transform: translate(-50%, -50%);
-      }
-
-      .dice-face-2 .dice-dot:nth-child(1) {
-        top: 25%; left: 25%; transform: translate(-50%, -50%);
-      }
-      .dice-face-2 .dice-dot:nth-child(2) {
-        bottom: 25%; right: 25%; transform: translate(50%, 50%);
-      }
-
-      .dice-face-3 .dice-dot:nth-child(1) {
-        top: 25%; left: 25%; transform: translate(-50%, -50%);
-      }
-      .dice-face-3 .dice-dot:nth-child(2) {
-        top: 50%; left: 50%; transform: translate(-50%, -50%);
-      }
-      .dice-face-3 .dice-dot:nth-child(3) {
-        bottom: 25%; right: 25%; transform: translate(50%, 50%);
-      }
-
-      .dice-face-4 .dice-dot:nth-child(1) {
-        top: 25%; left: 25%; transform: translate(-50%, -50%);
-      }
-      .dice-face-4 .dice-dot:nth-child(2) {
-        top: 25%; right: 25%; transform: translate(50%, -50%);
-      }
-      .dice-face-4 .dice-dot:nth-child(3) {
-        bottom: 25%; left: 25%; transform: translate(-50%, 50%);
-      }
-      .dice-face-4 .dice-dot:nth-child(4) {
-        bottom: 25%; right: 25%; transform: translate(50%, 50%);
-      }
-
-      .dice-face-5 .dice-dot:nth-child(1) {
-        top: 25%; left: 25%; transform: translate(-50%, -50%);
-      }
-      .dice-face-5 .dice-dot:nth-child(2) {
-        top: 25%; right: 25%; transform: translate(50%, -50%);
-      }
-      .dice-face-5 .dice-dot:nth-child(3) {
-        top: 50%; left: 50%; transform: translate(-50%, -50%);
-      }
-      .dice-face-5 .dice-dot:nth-child(4) {
-        bottom: 25%; left: 25%; transform: translate(-50%, 50%);
-      }
-      .dice-face-5 .dice-dot:nth-child(5) {
-        bottom: 25%; right: 25%; transform: translate(50%, 50%);
-      }
-
-      .dice-face-6 .dice-dot:nth-child(1) {
-        top: 25%; left: 25%; transform: translate(-50%, -50%);
-      }
-      .dice-face-6 .dice-dot:nth-child(2) {
-        top: 25%; right: 25%; transform: translate(50%, -50%);
-      }
-      .dice-face-6 .dice-dot:nth-child(3) {
-        top: 50%; left: 25%; transform: translate(-50%, -50%);
-      }
-      .dice-face-6 .dice-dot:nth-child(4) {
-        top: 50%; right: 25%; transform: translate(50%, -50%);
-      }
-      .dice-face-6 .dice-dot:nth-child(5) {
-        bottom: 25%; left: 25%; transform: translate(-50%, 50%);
-      }
-      .dice-face-6 .dice-dot:nth-child(6) {
-        bottom: 25%; right: 25%; transform: translate(50%, 50%);
-      }
-
-      .dice-total-pill {
-        background-color: #3b82f6;
-        color: white;
-        font-weight: 600;
-        padding: 4px 14px;
-        border-radius: 999px;
-        font-size: 16px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.25);
-        white-space: nowrap;
-      }
-
-      #dice-result {
-        background: #ffffff;
-        padding: 15px;
-        border-radius: 8px;
-        margin-top: 8px;
-        text-align: center;
-        font-weight: 500;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.25);
-        min-height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #020617;
-      }
-
-      #roll-status-bar {
-        background: linear-gradient(to right, #1e293b, #334155);
-        color: white;
-        padding: 10px 15px;
-        border-radius: 8px;
-        margin: 15px 0;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        display: none;
-      }
-
-      .status-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1rem;
-      }
-
-      .status-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.95rem;
-      }
-
-      .status-icon {
-        font-size: 18px;
-      }
-
-      #roll-button {
-        background: linear-gradient(145deg, #3b82f6, #2563eb);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 10px 20px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      }
-
-      #roll-button:hover:not(:disabled) {
-        background: linear-gradient(145deg, #2563eb, #1d4ed8);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 8px rgba(0,0,0,0.15);
-      }
-
-      #roll-button:disabled {
-        background: linear-gradient(145deg, #9ca3af, #6b7280);
-        cursor: not-allowed;
-        opacity: 0.7;
-      }
-
-      #roll-rounds-select {
-        padding: 8px 12px;
-        border-radius: 6px;
-        border: 1px solid #d1d5db;
-        background-color: white;
-        color: #111827;
-      }
-    </style>
+    #dice-styles {}
+    .roll-dice-outer {
+      position: relative;
+      overflow: visible;
+    }
+    .dice-total-row {
+      min-height: 30px;
+    }
+    .dice-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      margin: 4px 0 8px 0;
+      min-height: 90px;
+    }
+    .dice-slot {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 90px;
+      height: 90px;
+    }
+    .dice-inner {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(145deg, #ffffff, #e6e6e6);
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 5px 5px 15px rgba(0,0,0,0.2),
+                  -5px -5px 15px rgba(255,255,255,0.1);
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.3s ease;
+    }
+    .dice-inner.rolling {
+      animation: roll 0.8s ease-in-out;
+    }
+    @keyframes roll {
+      0%   { transform: rotateX(0deg)    rotateY(0deg); }
+      25%  { transform: rotateX(720deg)  rotateY(360deg)  scale(0.8); }
+      50%  { transform: rotateX(1440deg) rotateY(720deg)  scale(1.1); }
+      75%  { transform: rotateX(2160deg) rotateY(1080deg) scale(0.9); }
+      100% { transform: rotateX(2880deg) rotateY(1440deg) scale(1); }
+    }
+    .dice-dot {
+      width: 16px;
+      height: 16px;
+      background-color: #111827;
+      border-radius: 50%;
+      position: absolute;
+    }
+    .dice-face-1 .dice-dot:nth-child(1) {
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+    }
+    .dice-face-2 .dice-dot:nth-child(1) {
+      top: 25%; left: 25%; transform: translate(-50%, -50%);
+    }
+    .dice-face-2 .dice-dot:nth-child(2) {
+      bottom: 25%; right: 25%; transform: translate(50%, 50%);
+    }
+    .dice-face-3 .dice-dot:nth-child(1) {
+      top: 25%; left: 25%; transform: translate(-50%, -50%);
+    }
+    .dice-face-3 .dice-dot:nth-child(2) {
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+    }
+    .dice-face-3 .dice-dot:nth-child(3) {
+      bottom: 25%; right: 25%; transform: translate(50%, 50%);
+    }
+    .dice-face-4 .dice-dot:nth-child(1) {
+      top: 25%; left: 25%; transform: translate(-50%, -50%);
+    }
+    .dice-face-4 .dice-dot:nth-child(2) {
+      top: 25%; right: 25%; transform: translate(50%, -50%);
+    }
+    .dice-face-4 .dice-dot:nth-child(3) {
+      bottom: 25%; left: 25%; transform: translate(-50%, 50%);
+    }
+    .dice-face-4 .dice-dot:nth-child(4) {
+      bottom: 25%; right: 25%; transform: translate(50%, 50%);
+    }
+    .dice-face-5 .dice-dot:nth-child(1) {
+      top: 25%; left: 25%; transform: translate(-50%, -50%);
+    }
+    .dice-face-5 .dice-dot:nth-child(2) {
+      top: 25%; right: 25%; transform: translate(50%, -50%);
+    }
+    .dice-face-5 .dice-dot:nth-child(3) {
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+    }
+    .dice-face-5 .dice-dot:nth-child(4) {
+      bottom: 25%; left: 25%; transform: translate(-50%, 50%);
+    }
+    .dice-face-5 .dice-dot:nth-child(5) {
+      bottom: 25%; right: 25%; transform: translate(50%, 50%);
+    }
+    .dice-face-6 .dice-dot:nth-child(1) {
+      top: 25%; left: 25%; transform: translate(-50%, -50%);
+    }
+    .dice-face-6 .dice-dot:nth-child(2) {
+      top: 25%; right: 25%; transform: translate(50%, -50%);
+    }
+    .dice-face-6 .dice-dot:nth-child(3) {
+      top: 50%; left: 25%; transform: translate(-50%, -50%);
+    }
+    .dice-face-6 .dice-dot:nth-child(4) {
+      top: 50%; right: 25%; transform: translate(50%, -50%);
+    }
+    .dice-face-6 .dice-dot:nth-child(5) {
+      bottom: 25%; left: 25%; transform: translate(-50%, 50%);
+    }
+    .dice-face-6 .dice-dot:nth-child(6) {
+      bottom: 25%; right: 25%; transform: translate(50%, 50%);
+    }
+    .dice-total-pill {
+      background-color: #3b82f6;
+      color: white;
+      font-weight: 600;
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 16px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+      white-space: nowrap;
+    }
+    #dice-result {
+      background: #ffffff;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 8px;
+      text-align: center;
+      font-weight: 500;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #020617;
+    }
+    #roll-status-bar {
+      background: linear-gradient(to right, #1e293b, #334155);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      display: none;
+    }
+    .status-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+    }
+    .status-icon {
+      font-size: 18px;
+    }
+    #roll-button {
+      background: linear-gradient(145deg, #3b82f6, #2563eb);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    #roll-button:hover:not(:disabled) {
+      background: linear-gradient(145deg, #2563eb, #1d4ed8);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+    }
+    #roll-button:disabled {
+      background: linear-gradient(145deg, #9ca3af, #6b7280);
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+    #roll-rounds-select {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      background-color: white;
+      color: #111827;
+    }
   `;
 
   if (!document.getElementById("dice-styles")) {
-    const styleElement = document.createElement("div");
+    const styleElement = document.createElement("style");
     styleElement.id = "dice-styles";
-    styleElement.innerHTML = diceStyles;
+    styleElement.textContent = diceStyles;
     document.head.appendChild(styleElement);
   }
 
@@ -301,7 +295,7 @@ export function initRollDice() {
     container.innerHTML = "";
 
     const dice = document.createElement("div");
-    dice.className = `dice dice-face-${value}`;
+    dice.className = `dice-inner dice-face-${value}`;
 
     for (let i = 0; i < value; i++) {
       const dot = document.createElement("div");
@@ -323,36 +317,18 @@ export function initRollDice() {
     totalRow.appendChild(pill);
   }
 
-  function loadRollLeaderboard() {
-    fetch(
-      "http://localhost:5000/api/scores/leaderboard?game=roll-dice&limit=10"
-    )
-      .then((res) => res.json())
-      .then((rows) => {
-        const tbody = document.querySelector("#roll-leaderboard tbody");
-        if (!tbody) return;
-        tbody.innerHTML = "";
-        rows.forEach((row, index) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${index + 1}. ${row.username}</td>
-            <td style="text-align:right;">${row.value}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      })
-      .catch((err) => {
-        console.error("Error loading Roll Dice leaderboard:", err);
-      });
-  }
-
   function submitScore(scoreValue) {
+    if (destroyed) return;
     if (typeof window.getPlayerInfo !== "function") {
       console.error("getPlayerInfo is not available");
       return;
     }
 
     const player = window.getPlayerInfo();
+    if (!player || !player.name) {
+      console.error("Invalid player info", player);
+      return;
+    }
 
     fetch("http://localhost:5000/api/scores", {
       method: "POST",
@@ -370,7 +346,9 @@ export function initRollDice() {
       .then((res) => res.json())
       .then((data) => {
         console.log("Roll Dice score saved:", data);
-        loadRollLeaderboard();
+        if (typeof onScoreSaved === "function" && !destroyed) {
+          onScoreSaved();
+        }
       })
       .catch((err) => {
         console.error("Error saving Roll Dice score:", err);
@@ -442,17 +420,20 @@ export function initRollDice() {
     submitScore(sessionTotal);
   }
 
-  // reset listeners
-  rollButton.replaceWith(rollButton.cloneNode(true));
+  // reset listeners via cloning (keep pattern but track for cleanup)
+  const rollClone = rollButton.cloneNode(true);
+  rollButton.parentNode.replaceChild(rollClone, rollButton);
   const freshRollButton = document.getElementById("roll-button");
 
-  startMatchBtn.replaceWith(startMatchBtn.cloneNode(true));
+  const startClone = startMatchBtn.cloneNode(true);
+  startMatchBtn.parentNode.replaceChild(startClone, startMatchBtn);
   const freshStartMatchBtn = document.getElementById("roll-start-match-btn");
 
-  resetMatchBtn.replaceWith(resetMatchBtn.cloneNode(true));
+  const resetClone = resetMatchBtn.cloneNode(true);
+  resetMatchBtn.parentNode.replaceChild(resetClone, resetMatchBtn);
   const freshResetMatchBtn = document.getElementById("roll-reset-match-btn");
 
-  freshRollButton.addEventListener("click", () => {
+  const rollHandler = () => {
     if (!sessionActive || isRolling) return;
 
     isRolling = true;
@@ -470,8 +451,8 @@ export function initRollDice() {
       diceRow.appendChild(dice2Container);
     }
 
-    const dice1Element = document.querySelector("#dice1 .dice");
-    const dice2Element = document.querySelector("#dice2 .dice");
+    const dice1Element = document.querySelector("#dice1 .dice-inner");
+    const dice2Element = document.querySelector("#dice2 .dice-inner");
 
     if (dice1Element) dice1Element.classList.add("rolling");
     if (dice2Element) dice2Element.classList.add("rolling");
@@ -498,11 +479,24 @@ export function initRollDice() {
         setRollButtonEnabled(true);
       }
     }, 800);
-  });
+  };
 
-  freshStartMatchBtn.addEventListener("click", startSession);
-  freshResetMatchBtn.addEventListener("click", resetSessionState);
+  const startHandler = () => startSession();
+  const resetHandler = () => resetSessionState();
+
+  freshRollButton.addEventListener("click", rollHandler);
+  freshStartMatchBtn.addEventListener("click", startHandler);
+  freshResetMatchBtn.addEventListener("click", resetHandler);
+
+  cleanupFns.push(() =>
+    freshRollButton.removeEventListener("click", rollHandler)
+  );
+  cleanupFns.push(() =>
+    freshStartMatchBtn.removeEventListener("click", startHandler)
+  );
+  cleanupFns.push(() =>
+    freshResetMatchBtn.removeEventListener("click", resetHandler)
+  );
 
   resetSessionState();
-  loadRollLeaderboard();
 }
