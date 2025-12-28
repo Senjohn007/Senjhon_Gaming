@@ -1,7 +1,7 @@
 // src/components/GlobalAudio.jsx
 import React, { useRef, useEffect, useState } from "react";
 import { useSettings } from "../context/SettingsContext.jsx";
-//import bgMusic from "../assets/audio/bg-music.mp3";
+
 
 export default function GlobalAudio() {
   const audioRef = useRef(null);

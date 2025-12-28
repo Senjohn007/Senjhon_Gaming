@@ -2,6 +2,8 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { initSnake } from "../games/snake";
 import { useSettings } from "../context/SettingsContext.jsx";
+import { playClick, playSuccess, playFail } from "../audio/sfx.js";
+
 
 export default function SnakePage() {
   const { settings } = useSettings();
@@ -30,7 +32,19 @@ export default function SnakePage() {
   useEffect(() => {
     if (typeof initSnake === "function") {
       // pass tickDelay and callback to refresh scores after save
-      initSnake({ tickDelay, onScoreSaved: loadLeaderboard });
+      initSnake({
+        tickDelay,
+        onScoreSaved: () => {
+          playSuccess();        // play success sound when a score is saved
+          loadLeaderboard();
+        },
+        onGameOver: () => {
+          playFail();           // play fail sound when game over (if you wire this in initSnake)
+        },
+        onMove: () => {
+          playClick();          // optional: play click/move sound each tick (if you wire this in initSnake)
+        }
+      });
     }
   }, [tickDelay, loadLeaderboard]);
 
