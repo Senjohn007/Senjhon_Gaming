@@ -433,6 +433,12 @@ export default function ProfilePage() {
                         className="w-full rounded-lg bg-slate-800/50 border border-slate-600/50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
+                        onKeyDown={(e) => {
+                          // Allow space key in username
+                          if (e.key === ' ') {
+                            e.stopPropagation();
+                          }
+                        }}
                         placeholder="e.g. ShadowKnight, SenjhonPro"
                       />
                       <p className="mt-1.5 text-xs text-slate-400">
@@ -452,6 +458,12 @@ export default function ProfilePage() {
                         className="w-full rounded-lg bg-slate-800/50 border border-slate-600/50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        onKeyDown={(e) => {
+                          // Allow space key in name
+                          if (e.key === ' ') {
+                            e.stopPropagation();
+                          }
+                        }}
                         placeholder="Your real or preferred name"
                       />
                     </div>
@@ -467,6 +479,12 @@ export default function ProfilePage() {
                         className="w-full min-h-[100px] rounded-lg bg-slate-800/50 border border-slate-600/50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none"
                         value={bio}
                         onChange={(e) => setBio(e.target.value)}
+                        onKeyDown={(e) => {
+                          // Allow space key in bio
+                          if (e.key === ' ') {
+                            e.stopPropagation();
+                          }
+                        }}
                         maxLength={200}
                         placeholder="Short description about you, your favorite games, or play style."
                       />
@@ -492,6 +510,12 @@ export default function ProfilePage() {
                         className="w-full rounded-lg bg-slate-800/50 border border-slate-600/50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                         value={country}
                         onChange={(e) => setCountry(e.target.value)}
+                        onKeyDown={(e) => {
+                          // Allow space key in country
+                          if (e.key === ' ') {
+                            e.stopPropagation();
+                          }
+                        }}
                         placeholder="e.g. Sri Lanka"
                       />
                     </div>

@@ -420,34 +420,40 @@ export default function TicTacToePage() {
               </span>
             </div>
 
-            <div id="game-root">
-              <div
-                id="ttt-setup"
-                className="mb-3 flex flex-wrap items-center gap-2"
-              >
-                <label
-                  htmlFor="ttt-rounds-select"
-                  className="text-sm text-slate-200"
-                >
-                  Play:
-                </label>
-                <select
-                  id="ttt-rounds-select"
-                  defaultValue="3"
-                  className="h-9 rounded-lg bg-slate-950 border border-slate-700 px-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                >
-                  <option value="1">Best of 1</option>
-                  <option value="3">Best of 3</option>
-                  <option value="5">Best of 5</option>
-                </select>
-                <button
-                  id="ttt-start-match-btn"
-                  type="button"
-                  className="h-9 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-xs sm:text-sm font-semibold text-slate-900 shadow-[0_10px_25px_rgba(251,191,36,0.45)] transition-colors"
-                >
-                  Start Match
-                </button>
-              </div>
+           <div id="game-root">
+  <div
+    id="ttt-setup"
+    className="mb-3 flex flex-wrap items-center gap-2"
+  >
+    <label
+      htmlFor="ttt-rounds-select"
+      className="text-sm text-slate-200"
+    >
+      Play:
+    </label>
+
+    <select
+      id="ttt-rounds-select"
+      defaultValue="3"
+      className="h-9 rounded-lg bg-white text-black border border-slate-700 px-2 text-sm
+                 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+    >
+      <option className="text-black" value="1">Best of 1</option>
+      <option className="text-black" value="3">Best of 3</option>
+      <option className="text-black" value="5">Best of 5</option>
+    </select>
+
+    <button
+      id="ttt-start-match-btn"
+      type="button"
+      className="h-9 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 active:bg-amber-600
+                 text-xs sm:text-sm font-semibold text-slate-900 shadow-[0_10px_25px_rgba(251,191,36,0.45)]
+                 transition-colors"
+    >
+      Start Match
+    </button>
+  </div>
+
 
               <div
                 id="ttt-status-bar"
