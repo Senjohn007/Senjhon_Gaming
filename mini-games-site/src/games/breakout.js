@@ -10,8 +10,8 @@ export function initBreakout({ onScoreSaved } = {}) {
   const ballRadius = 8;
   let x = canvas.width / 2;
   let y = canvas.height - 30;
-  let dx = 2;
-  let dy = -2;
+  let dx = 1.5;
+  let dy = -1.5;
   let ballTrail = [];
   let ballGlow = 0;
 
@@ -32,13 +32,7 @@ export function initBreakout({ onScoreSaved } = {}) {
   const brickOffsetLeft = 15;
 
   const bricks = [];
-  const brickColors = [
-    "#ef4444",
-    "#f97316",
-    "#eab308",
-    "#22c55e",
-    "#3b82f6",
-  ];
+  const brickColors = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6"];
 
   for (let c = 0; c < brickColumnCount; c++) {
     bricks[c] = [];
@@ -61,9 +55,9 @@ export function initBreakout({ onScoreSaved } = {}) {
 
   let lives = 3;
   let running = false;
-  let loop = null;
-  let frameCount = 0;
   let destroyed = false;
+  let frameCount = 0;
+  let animationId = null;
 
   function initStars() {
     stars = [];
@@ -129,9 +123,7 @@ export function initBreakout({ onScoreSaved } = {}) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${
-          localStorage.getItem("authToken") || ""
-        }`,
+        Authorization: `Bearer ${localStorage.getItem("authToken") || ""}`,
       },
       body: JSON.stringify({
         gameKey: "breakout",
@@ -157,15 +149,10 @@ export function initBreakout({ onScoreSaved } = {}) {
     if (ballTrail.length > 10) ballTrail.shift();
 
     ballTrail.forEach((point, index) => {
-      ctx.globalAlpha = (index / ballTrail.length) * 0.5;
+      const t = index / ballTrail.length;
+      ctx.globalAlpha = t * 0.5;
       ctx.beginPath();
-      ctx.arc(
-        point.x,
-        point.y,
-        ballRadius * (index / ballTrail.length),
-        0,
-        Math.PI * 2
-      );
+      ctx.arc(point.x, point.y, ballRadius * t, 0, Math.PI * 2);
       ctx.fillStyle = "#22c55e";
       ctx.fill();
       ctx.closePath();
@@ -295,10 +282,8 @@ export function initBreakout({ onScoreSaved } = {}) {
       for (let r = 0; r < brickRowCount; r++) {
         const b = bricks[c][r];
         if (b.status === 1) {
-          const brickX =
-            c * (brickWidth + brickPadding) + brickOffsetLeft;
-          const brickY =
-            r * (brickHeight + brickPadding) + brickOffsetTop;
+          const brickX = c * (brickWidth + brickPadding) + brickOffsetLeft;
+          const brickY = r * (brickHeight + brickPadding) + brickOffsetTop;
           b.x = brickX;
           b.y = brickY;
 
@@ -319,13 +304,7 @@ export function initBreakout({ onScoreSaved } = {}) {
           ctx.fillRect(brickX + 2, brickY + 2, brickWidth, brickHeight);
 
           ctx.beginPath();
-          ctx.roundRect(
-            brickX,
-            brickY,
-            brickWidth,
-            brickHeight,
-            3
-          );
+          ctx.roundRect(brickX, brickY, brickWidth, brickHeight, 3);
 
           const gradient = ctx.createLinearGradient(
             brickX,
@@ -353,8 +332,8 @@ export function initBreakout({ onScoreSaved } = {}) {
           ctx.closePath();
 
           if (b.breaking) {
-            ctx.globalAlpha = 1 - b.breakProgress;
             ctx.save();
+            ctx.globalAlpha = 1 - b.breakProgress;
             ctx.translate(
               brickX + brickWidth / 2,
               brickY + brickHeight / 2
@@ -369,13 +348,7 @@ export function initBreakout({ onScoreSaved } = {}) {
             );
 
             ctx.beginPath();
-            ctx.roundRect(
-              brickX,
-              brickY,
-              brickWidth,
-              brickHeight,
-              3
-            );
+            ctx.roundRect(brickX, brickY, brickWidth, brickHeight, 3);
             ctx.fillStyle = b.color;
             ctx.fill();
             ctx.closePath();
@@ -401,6 +374,7 @@ export function initBreakout({ onScoreSaved } = {}) {
           ) {
             dy = -dy;
             b.breaking = true;
+            b.breakProgress = 0;
             bricksBroken++;
 
             const remaining = bricks
@@ -431,12 +405,10 @@ export function initBreakout({ onScoreSaved } = {}) {
   }
 
   function drawBackground() {
-    const gradient = ctx.createLinearGradient(
-      0,
-      0,
-      0,
-      canvas.height
-    );
+    ctx.globalAlpha = 1;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
     gradient.addColorStop(0, "#0f172a");
     gradient.addColorStop(1, "#1e293b");
     ctx.fillStyle = gradient;
@@ -456,7 +428,19 @@ export function initBreakout({ onScoreSaved } = {}) {
     ctx.globalAlpha = 1;
   }
 
-  function draw() {
+  function step() {
+    if (destroyed) return;
+
+    if (!running) {
+      drawBackground();
+      drawBricks();
+      drawPaddle();
+      drawLives();
+      drawParticles();
+      animationId = requestAnimationFrame(step);
+      return;
+    }
+
     frameCount++;
 
     drawBackground();
@@ -479,7 +463,7 @@ export function initBreakout({ onScoreSaved } = {}) {
       if (x > paddleX && x < paddleX + paddleWidth) {
         dy = -dy;
         const hitPos = (x - paddleX) / paddleWidth;
-        dx = 4 * (hitPos - 0.5);
+        dx = 3 * (hitPos - 0.5); // slower horizontal boost
         createParticles(x, y, "#0ea5e9");
       } else if (y + dy > canvas.height - ballRadius) {
         lives--;
@@ -487,12 +471,13 @@ export function initBreakout({ onScoreSaved } = {}) {
           statusDiv.textContent =
             "Game over! Press left/right to restart.";
           stopGame("loss");
+          animationId = requestAnimationFrame(step);
           return;
         } else {
           x = canvas.width / 2;
           y = canvas.height - 30;
-          dx = 2;
-          dy = -2;
+          dx = 1.5;
+          dy = -1.5;
           paddleX = (canvas.width - paddleWidth) / 2;
           ballTrail = [];
         }
@@ -507,6 +492,8 @@ export function initBreakout({ onScoreSaved } = {}) {
 
     x += dx;
     y += dy;
+
+    animationId = requestAnimationFrame(step);
   }
 
   function startGame() {
@@ -517,6 +504,7 @@ export function initBreakout({ onScoreSaved } = {}) {
     bricksBroken = 0;
     particles = [];
     ballTrail = [];
+    frameCount = 0;
 
     for (let c = 0; c < brickColumnCount; c++) {
       for (let r = 0; r < brickRowCount; r++) {
@@ -528,21 +516,18 @@ export function initBreakout({ onScoreSaved } = {}) {
 
     x = canvas.width / 2;
     y = canvas.height - 30;
-    dx = 2;
-    dy = -2;
+    dx = 1.5;
+    dy = -1.5;
     paddleX = (canvas.width - paddleWidth) / 2;
 
-    if (loop) clearInterval(loop);
-    loop = setInterval(draw, 16);
+    if (!animationId) {
+      animationId = requestAnimationFrame(step);
+    }
   }
 
   function stopGame(result) {
     if (!running) return;
     running = false;
-    if (loop) {
-      clearInterval(loop);
-      loop = null;
-    }
 
     const scoreValue = bricksBroken;
     const resultText =
@@ -577,13 +562,18 @@ export function initBreakout({ onScoreSaved } = {}) {
   document.addEventListener("keyup", handleKeyUp);
 
   initStars();
-  draw();
 
-  // optional cleanup for React unmounts
+  if (!animationId) {
+    animationId = requestAnimationFrame(step);
+  }
+
   return () => {
     destroyed = true;
     document.removeEventListener("keydown", handleKeyDown);
     document.removeEventListener("keyup", handleKeyUp);
-    if (loop) clearInterval(loop);
+    if (animationId) {
+      cancelAnimationFrame(animationId);
+      animationId = null;
+    }
   };
 }
