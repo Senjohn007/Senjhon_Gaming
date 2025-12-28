@@ -252,6 +252,20 @@ export default function HangmanPage() {
     };
   }, [loadLeaderboard]);
 
+  // helper to click a letter via the existing DOM-based game logic
+  const handleLetterClick = (letter) => {
+    const input = document.getElementById("hangman-input");
+    const guessBtn = document.getElementById("hangman-guess");
+    if (!input || !guessBtn) return;
+    input.value = letter;
+    // optional: ensure focus for accessibility
+    input.focus();
+    // trigger the same handler as manual guessing
+    guessBtn.click();
+  };
+
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
   return (
     <main className="min-h-[calc(100vh-80px)] relative overflow-hidden">
       {/* Animated Background */}
@@ -449,9 +463,19 @@ export default function HangmanPage() {
               ></div>
 
               <div
-                id="hangman-info"
-                className="feedback mt-3 text-sm text-slate-300 text-center"
-              ></div>
+  id="hangman-info"
+  className="mt-3 text-sm text-black text-center"
+  style={{
+    color: "#000000",
+    opacity: 1,
+    visibility: "visible",
+    filter: "none",
+    textShadow: "none",
+  }}
+></div>
+
+
+
 
               <div className="mt-4 flex gap-2 justify-center">
                 <input
@@ -467,6 +491,20 @@ export default function HangmanPage() {
                 >
                   Guess letter
                 </button>
+              </div>
+
+              {/* NEW: clickable alphabet */}
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                {alphabet.map((letter) => (
+                  <button
+                    key={letter}
+                    type="button"
+                    onClick={() => handleLetterClick(letter)}
+                    className="w-8 h-8 flex items-center justify-center rounded-md bg-slate-800 text-slate-100 text-xs font-semibold hover:bg-purple-500 hover:text-slate-900 transition-colors"
+                  >
+                    {letter}
+                  </button>
+                ))}
               </div>
 
               <div
