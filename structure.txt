@@ -1,0 +1,84 @@
+senjhon-gaming/
+├─ client/                               # React + Vite frontend
+│  ├─ index.html
+│  ├─ package.json
+│  ├─ vite.config.js
+│  ├─ postcss.config.js
+│  ├─ tailwind.config.js
+│  ├─ .eslintrc.cjs
+│  ├─ .gitignore
+│  └─ src/
+│     ├─ main.jsx
+│     ├─ App.jsx
+│     ├─ auth.js                         # getCurrentUser, saveToken, logout
+│     ├─ context/
+│     │  └─ SettingsContext.jsx          # global audio + difficulty + localStorage
+│     ├─ components/
+│     │  ├─ GlobalAudio.jsx              # background <audio> for whole app
+│     │  ├─ SettingsDrawer.jsx           # mute/volume/difficulty UI
+│     │  └─ common/                      # shared UI pieces (optional)
+│     ├─ pages/
+│     │  ├─ HomePage.jsx
+│     │  ├─ LoginPage.jsx
+│     │  ├─ RegisterPage.jsx
+│     │  ├─ RollDicePage.jsx
+│     │  ├─ HangmanPage.jsx
+│     │  ├─ SnakePage.jsx
+│     │  ├─ TypingSpeedPage.jsx
+│     │  ├─ RpsPage.jsx
+│     │  ├─ TicTacToePage.jsx
+│     │  ├─ WackAMolePage.jsx
+│     │  ├─ BreakoutPage.jsx
+│     │  ├─ MinesweeperPage.jsx
+│     │  ├─ BattleshipPage.jsx
+│     │  ├─ FlappyPage.jsx
+│     │  └─ AsteroidsPage.jsx
+│     ├─ games/                          # pure JS game logic, DOM-based
+│     │  ├─ roll-dice.js
+│     │  ├─ hangman.js
+│     │  ├─ snake.js
+│     │  ├─ typing-speed.js
+│     │  ├─ rps.js
+│     │  ├─ tic-tac-toe.js
+│     │  ├─ wack-a-mole.js
+│     │  ├─ breakout.js
+│     │  ├─ minesweeper.js
+│     │  ├─ battleship.js
+│     │  ├─ flappy.js
+│     │  ├─ asteroids.js
+│     │  └─ username.js                  # defines window.getPlayerInfo
+│     ├─ assets/
+│     │  ├─ audio/
+│     │  │  └─ bg-music.mp3
+│     │  ├─ images/
+│     │  │  ├─ logo.svg
+│     │  │  └─ game-thumbs/*.png
+│     │  └─ fonts/
+│     └─ styles/
+│        ├─ background.css
+│        ├─ motion.css
+│        └─ tailwind.css                 # @tailwind base/components/utilities
+│
+├─ server/                               # Node.js + Express + MongoDB backend
+│  ├─ package.json
+│  ├─ server.js                          # Express app, Mongo connection, mount routes
+│  ├─ .env                               # MONGO_URI, JWT_SECRET, PORT, etc.
+│  ├─ models/
+│  │  ├─ User_model.js                   # name, email, passwordHash
+│  │  └─ Score_model.js                  # userId, username, gameKey, value, createdAt
+│  ├─ routes/
+│  │  ├─ authRoutes.js                   # /api/auth/register, /login, /me
+│  │  └─ scoreRoutes.js                  # /api/scores, /api/scores/leaderboard
+│  ├─ middleware/
+│  │  ├─ authMiddleware.js               # JWT verification, attaches req.user
+│  │  └─ errorHandler.js                 # centralized error handling
+│  ├─ controllers/                       # optional separation of logic
+│  │  ├─ authController.js               # register, login handlers
+│  │  └─ scoreController.js              # submitScore, getLeaderboard
+│  └─ utils/
+│     ├─ jwt.js                          # sign/verify token helpers
+│     └─ validateScore.js                # validate gameKey, score ranges
+│
+├─ package.json                          # optional root scripts / workspaces
+├─ README.md
+└─ .gitignore
