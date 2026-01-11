@@ -1,0 +1,14 @@
+🚀 Project Launch: Senjhon Gaming
+
+Built a full-stack MERN mini-games platform featuring 12 browser-based games like Snake, Tic-Tac-Toe, Minesweeper, Breakout, and Flappy Bird.
+
+Developed with React + Vite + Tailwind CSS, and powered by a Node.js, Express, MongoDB backend with JWT authentication, user profiles, and per-game leaderboards.
+
+This project showcases my skills in SPA architecture, REST API design, state management, and database-driven applications.
+
+🛠️ MERN | Vite | Tailwind | MongoDB | JWT
+🎮 Online arcade experience
+
+#MERN #FullStackDevelopment #ReactJS #NodeJS #MongoDB
+#WebDevelopment #JavaScript #Vite #TailwindCSS
+#StudentDeveloper #ProjectShowcase
